@@ -7,6 +7,15 @@ const Button = ({ handleClick, text })  => {
   )
 }
 
+//StadisticsLine Component
+const StatisticLine  = ({text, value}) => {
+  return (
+    <>
+      <p>{text} {value}</p>
+    </>
+  )
+}
+
 //StadisticsComments Component 
 const StadisticsComments = (props) => {
 
@@ -17,12 +26,12 @@ const StadisticsComments = (props) => {
   if (all > 0){
     return (
       <div>
-        <p> Good {good} </p>
-        <p> Neutral {neutral} </p>
-        <p> Bad {bad} </p>
-        <p> All {all} </p>
-        <p> Average {(good*1 + neutral*0 + bad*-1)/all} </p>
-        <p> Average {(good/all)*100} %</p>
+        <StatisticLine text="Good" value={good}/>
+        <StatisticLine text="Neutral" value={neutral}/>
+        <StatisticLine text="Bad" value={bad}/>
+        <StatisticLine text="All" value={all}/>
+        <StatisticLine text="Average" value={(good*1 + neutral*0 + bad*-1)/all}/>
+        <StatisticLine text="Positive" value={(good/all)*100+"%"}/>
       </div>
     )
   }else{
@@ -35,6 +44,9 @@ const StadisticsComments = (props) => {
 }
 
 const App = () => {
+
+  console.log("Versión 1.10")
+
   // guarda los clics de cada botón en su propio estado
   const [good, setGood] = useState(0)
   const [neutral, setNeutral] = useState(0)
