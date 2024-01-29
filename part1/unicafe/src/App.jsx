@@ -7,17 +7,21 @@ const Button = ({ handleClick, text })  => {
   )
 }
 
-//StadisticsClick Component
-const StadisticsClick = (props) => {
+//StadisticsComments Component
+const StadisticsComments = (props) => {
 
   console.log ("props", props)
   const [good, neutral, bad] = props.states;
+  const all = good + neutral + bad
 
   return (
     <div>
       <p> Good {good} </p>
       <p> Neutral {neutral} </p>
       <p> Bad {bad} </p>
+      <p> All {all} </p>
+      <p> Average {(good*1 + neutral*0 + bad*-1)/all} </p>
+      <p> Average {(good/all)*100} %</p>
     </div>
   )
 }
@@ -49,7 +53,7 @@ const App = () => {
       <Button handleClick={handleBadClick} text="Bad" />
 
       <h1>Stadistics</h1>
-      <StadisticsClick states={[good,neutral,bad]} />
+      <StadisticsComments states={[good,neutral,bad]} />
 
     </div>
   )
