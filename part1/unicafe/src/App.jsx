@@ -14,16 +14,24 @@ const StadisticsComments = (props) => {
   const [good, neutral, bad] = props.states;
   const all = good + neutral + bad
 
-  return (
-    <div>
-      <p> Good {good} </p>
-      <p> Neutral {neutral} </p>
-      <p> Bad {bad} </p>
-      <p> All {all} </p>
-      <p> Average {(good*1 + neutral*0 + bad*-1)/all} </p>
-      <p> Average {(good/all)*100} %</p>
-    </div>
-  )
+  if (all > 0){
+    return (
+      <div>
+        <p> Good {good} </p>
+        <p> Neutral {neutral} </p>
+        <p> Bad {bad} </p>
+        <p> All {all} </p>
+        <p> Average {(good*1 + neutral*0 + bad*-1)/all} </p>
+        <p> Average {(good/all)*100} %</p>
+      </div>
+    )
+  }else{
+    return (
+      <div>
+        <p> No feedback given </p>
+      </div>
+    )
+  }
 }
 
 const App = () => {
