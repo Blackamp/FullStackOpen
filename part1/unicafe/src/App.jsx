@@ -7,7 +7,7 @@ const Button = ({ handleClick, text })  => {
   )
 }
 
-//StadisticsComments Component
+//StadisticsComments Component 
 const StadisticsComments = (props) => {
 
   console.log ("props", props)
