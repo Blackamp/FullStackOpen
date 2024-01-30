@@ -18,6 +18,41 @@ const DisplayAnecdote = (props)  => {
   )
 }
 
+//DisplayAnecdote Component
+const DisplayBestAnecdote = (props)  => {
+
+  function indexOfMax(arr) {
+    if (arr.length === 0) {
+        return -1;
+    }
+
+    var max = arr[0];
+    var maxIndex = 0;
+
+    for (var i = 1; i < arr.length; i++) {
+        if (arr[i] > max) {
+            maxIndex = i;
+            max = arr[i];
+        }
+    }
+
+    return maxIndex;
+  }
+
+  const maxIndex = indexOfMax(props.arrayVotes)
+  console.log(props.arrayVotes)
+  console.log(Math.max(props.arrayVotes))
+  console.log(maxIndex)
+
+  return (
+    <div>
+      <h1>Anecdote with most votes</h1>
+      <p>{props.arrayAnecdotes[maxIndex]}</p> 
+      <p>Has {props.arrayVotes[maxIndex]} votes</p> 
+    </div>
+  )
+}
+
 
 
 const App = () => {
@@ -65,6 +100,7 @@ const App = () => {
       <DisplayAnecdote arrayAnecdotes={anecdotes} index={selected} arrayVotes={votes}/>
       <Button handleClick={() => handleVote(selected,votes)} text="Vote"/>
       <Button handleClick={() => handleAnecdoteClick(selected,anecdotes.length)} text="Next anecdote"/>
+      <DisplayBestAnecdote arrayAnecdotes={anecdotes} index={selected} arrayVotes={votes}/>
     </div>
   )
 }
