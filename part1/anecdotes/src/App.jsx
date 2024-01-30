@@ -8,6 +8,16 @@ const Button = ({ handleClick, text })  => {
   )
 }
 
+//DisplayAnecdote Component
+const DisplayAnecdote = (props)  => {
+  return (
+    <div>
+      <p>{props.arrayAnecdotes[props.index]}</p> 
+      <p>This anecdote has {props.arrayVotes[props.index]} votes</p> 
+    </div>
+  )
+}
+
 
 
 const App = () => {
@@ -22,7 +32,10 @@ const App = () => {
     'The only way to go fast, is to go well.'
   ]
 
+
   const [selected, setSelected] = useState(0)
+  const [votes, setVotes] = useState(new Uint8Array(anecdotes.length))
+
 
     //Handler
     const handleAnecdoteClick = (selectedNow,max) => {
@@ -31,17 +44,27 @@ const App = () => {
 
       do{
          randomAnecdote = Math.floor(Math.random() * max)
-         console.log("Número anécdota anterior:"+selectedNow)
-         console.log("Número aleatorio:"+randomAnecdote)
+         //console.log("Número anécdota anterior:"+selectedNow)
+         //console.log("Número aleatorio:"+randomAnecdote)
       }while (selectedNow ==randomAnecdote )
-      console.log("-----------------------------------")
+  
       setSelected(randomAnecdote)
     }
 
+    //Handler
+    const handleVote = (selectedNow,arrayVotes) => {
+      const copyVotes = [...arrayVotes]
+      copyVotes[selectedNow] += 1
+      setVotes(copyVotes)
+    }
+
+    console.log(votes)
+
   return (
     <div>
-      <p>{anecdotes[selected]}</p>
-      <Button handleClick={() => handleAnecdoteClick(selected,anecdotes.length-1)} text="Next anecdote"/>
+      <DisplayAnecdote arrayAnecdotes={anecdotes} index={selected} arrayVotes={votes}/>
+      <Button handleClick={() => handleVote(selected,votes)} text="Vote"/>
+      <Button handleClick={() => handleAnecdoteClick(selected,anecdotes.length)} text="Next anecdote"/>
     </div>
   )
 }
