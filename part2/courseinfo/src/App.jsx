@@ -24,7 +24,7 @@ const App = () => {
     ]
   }
 
-  console.log("E-2.1")
+  console.log("E-2.3")
 
   return <Course course={course} />
 }
