@@ -3,7 +3,7 @@ import Content from './Content'
 
 const Course = ({course}) => {
 
-  console.log("Component Course: ",course)  
+  console.log("Component Course: ",course) 
 
   return (
     <div>

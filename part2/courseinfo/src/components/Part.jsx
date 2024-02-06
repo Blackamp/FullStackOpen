@@ -1,4 +1,4 @@
-const Part = ({ part }) => 
+const Part = ({ id, part }) => 
   <p>
     {part.name} {part.exercises}
   </p>

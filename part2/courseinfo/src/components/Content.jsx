@@ -1,17 +1,18 @@
 import Part from './Part'
 
-const Content = ({ parts }) => 
-  <>
-    <Part
-      part={parts[0]} 
-    />
-    <Part
-      part={parts[1]} 
-    />
-    <Part
-      part={parts[2]} 
-    />      
-  </>
+const Content = ({ parts }) =>  {
 
+  
+
+  const contentPart = parts.map (part => {return <Part key={part.id} part={part}/>})
+  console.log(contentPart)
+
+  return (
+    <>
+      {contentPart}
+    </>
+  )
+}
+ 
 
 export default Content
