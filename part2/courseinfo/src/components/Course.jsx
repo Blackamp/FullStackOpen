@@ -2,16 +2,24 @@ import Header from './Header'
 import Content from './Content'
 import Total from './Total'
 
-const Course = ({course}) => {
+const Course = ({courses}) => {
 
-  console.log("Component Course: ",course) 
+  console.log("Component Course: ",courses) 
+
+  const courseGroup = courses.map (function(item) {
+    return (
+      <div>
+        <Header course={item.name} />
+        <Content parts={item.parts} />
+        <Total parts={item.parts} />
+      </div>
+    )
+  })
 
   return (
-    <div>
-      <Header course={course.name} />
-      <Content parts={course.parts} />
-      <Total parts={course.parts} />
-    </div>
+    <>
+      {courseGroup}
+    </>
   )
 }
 
