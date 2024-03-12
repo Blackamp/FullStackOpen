@@ -13,9 +13,17 @@ const App = () => {
     event.preventDefault()
 
     const newContact = { name: newName }
-    
-    setPersons(persons.concat(newContact))
-    setNewName('')
+
+    console.log("Array: ", persons)
+    console.log("Nuevo contacto ", newContact)
+
+    if (persons.some(i => i.name.includes(newContact.name)))
+    {
+      alert(`El contacto ${newName} ya está en la agenda`)
+    }else{
+      setPersons(persons.concat(newContact))
+      setNewName('')
+    }
   }
 
   const handleNameChange = (event) => {
