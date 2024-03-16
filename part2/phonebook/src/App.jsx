@@ -48,6 +48,24 @@ const App = () => {
     }
   }
 
+  const handleDeleteContact = id => {
+    console.log(`handleDelete`)
+
+    const contactToDelete = persons.find(p => p.id === id)
+
+    if (window.confirm(`Delete ${contactToDelete.name} ?`)) {
+      console.log(`Delete ${id} now!!!!!!`)
+      contactService
+        .deleteContact(id)
+        .then(returnedContactDeleted => {
+          setPersons(persons.filter(p => p.id !== id))
+        })
+        .catch(error => {
+          alert(`The contact '${contactToDelete.name}' couldn't be deleted from server`)
+        })
+    }
+  }
+
   const handleNameChange = (event) => {
     //console.log(event.target.value)
     setNewName(event.target.value)
@@ -78,7 +96,7 @@ const App = () => {
       <PersonForm valueName={newName} handleEventName={handleNameChange} valuePhone={newPhone} handleEventPhone={handlePhoneChange} handleForm={addContact}/>
       
       <h2>Numbers</h2>
-      <Persons handleFilter={contactsToShow} />
+      <Persons handleFilter={contactsToShow} handleDelete={handleDeleteContact} />
       
     </div>
   )

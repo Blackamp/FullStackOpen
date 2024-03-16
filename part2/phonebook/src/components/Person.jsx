@@ -1,8 +1,13 @@
-const Person = ({ person }) => {
+const Person = (props) => {
 
-  //console.log("Component Person ", person)
+  //console.log("Component Person ", props)
+
     return (
-      <li>{person.name} | {person.phone}</li>
+      <div>
+        <li>{props.person.name} / {props.person.phone} |  <button onClick={props.handleDelete}>deleteContact</button></li>
+      </div>
+
+     
     )
   }
   
