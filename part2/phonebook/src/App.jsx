@@ -4,15 +4,17 @@ import Person from './components/Person'
 const App = () => {
   //Estados
   const [persons, setPersons] = useState([
-    { name: 'Arto Hellas' }
+    { name: 'Arto Hellas',
+      phone: '667889112' }
   ]) 
   const [newName, setNewName] = useState('')
+  const [newPhone, setNewPhone] = useState('')
 
   //Handle Events
   const addContact = (event) => {
     event.preventDefault()
 
-    const newContact = { name: newName }
+    const newContact = { name: newName, phone: newPhone }
 
     console.log("Array: ", persons)
     console.log("Nuevo contacto ", newContact)
@@ -23,12 +25,18 @@ const App = () => {
     }else{
       setPersons(persons.concat(newContact))
       setNewName('')
+      setNewPhone('')
     }
   }
 
   const handleNameChange = (event) => {
     //console.log(event.target.value)
     setNewName(event.target.value)
+  }
+
+  const handlePhoneChange = (event) => {
+    //console.log(event.target.value)
+    setNewPhone(event.target.value)
   }
 
   return (
@@ -39,6 +47,9 @@ const App = () => {
           name: <input value={newName} onChange={handleNameChange} />
         </div>
         <div>
+          phone: <input value={newPhone} onChange={handlePhoneChange} />
+        </div>
+        <div>
           <button type="submit">add</button>
         </div>
       </form>
@@ -46,7 +57,7 @@ const App = () => {
       <h2>Numbers</h2>
       <ul>
         {persons.map(person =>
-          <Person key={person.name} person={person} />
+          <Person key={person.phone} person={person} />
         )}
       </ul>
     </div>
