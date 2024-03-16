@@ -1,5 +1,7 @@
 import { useState } from 'react'
-import Person from './components/Person'
+import Persons from './components/Persons'
+import Filter from './components/Filter'
+import PersonForm from './components/PersonForm'
 
 const App = () => {
   //Estados
@@ -51,37 +53,22 @@ const App = () => {
     setFilterState(true)
   }
 
-  
   const contactsToShow = filterState
   ? persons.filter(person => person.name.includes(newsearch))
   : persons
-  
+
   
   return (
     <div>
       <h2>Phonebook</h2>
-      <div>
-        filter shown with <input value={newsearch} onChange={handleSearchChange} /> 
-      </div>
-      <br></br>
-      <form onSubmit={addContact}>
-        <div>
-          name: <input value={newName} onChange={handleNameChange} />
-        </div>
-        <div>
-          phone: <input value={newPhone} onChange={handlePhoneChange} />
-        </div>
-        <div>
-          <button type="submit">add</button>
-        </div>
-      </form>
+      <Filter value={newsearch} handleEvent={handleSearchChange}/>
 
+      <h3>Add a new</h3>
+      <PersonForm valueName={newName} handleEventName={handleNameChange} valuePhone={newPhone} handleEventPhone={handlePhoneChange} handleForm={addContact}/>
+      
       <h2>Numbers</h2>
-      <ul>
-        {contactsToShow.map(person =>
-          <Person key={person.phone} person={person} />
-        )}
-      </ul>
+      <Persons handleFilter={contactsToShow} />
+      
     </div>
   )
 }
