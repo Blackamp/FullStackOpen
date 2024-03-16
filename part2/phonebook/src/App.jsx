@@ -1,5 +1,5 @@
 import { useState, useEffect} from 'react'
-import axios from 'axios'
+import contactService from './services/contacts'
 import Persons from './components/Persons'
 import Filter from './components/Filter'
 import PersonForm from './components/PersonForm'
@@ -15,11 +15,11 @@ const App = () => {
   //Get Data with Axios
   useEffect(() => {
     console.log('effect')
-    axios
-      .get('http://localhost:3001/persons')
-      .then(response => {
-        console.log('promise fulfilled')
-        setPersons(response.data)
+    contactService
+      .getAll()
+      .then(initialContacts => {
+        console.log('promise fulfilled:', initialContacts)
+        setPersons(initialContacts)
       })
   }, [])
 
@@ -27,20 +27,24 @@ const App = () => {
   const addContact = (event) => {
     event.preventDefault()
 
-    const newContact = { name: newName, phone: newPhone, id:persons.length+1 }
+    const newContact = { name: newName, phone: newPhone}
 
     console.log("Array: ", persons)
     console.log("Nuevo contacto ", newContact)
 
     if (persons.some(i => i.name.includes(newContact.name)))
-    {
-      alert(`El contacto ${newName} ya está en la agenda`)
-    }else{
-      setPersons(persons.concat(newContact))
-      setNewName('')
-      setNewPhone('')
-      setNewSearch('')
-      setFilterState(false)
+        alert(`El contacto ${newName} ya está en la agenda`)
+    else{
+      contactService
+      .create(newContact)
+      .then(returnedContact => {
+        setPersons(persons.concat(returnedContact))
+        setNewName('')
+        setNewPhone('')
+        setNewSearch('')
+        setFilterState(false)
+      })
+
     }
   }
 
