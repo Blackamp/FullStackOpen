@@ -5,7 +5,7 @@ const Persons = (props) => {
       return (
         <ul>
             {props.handleFilter.map(person =>
-            <Person key={person.phone} person={person} />
+            <Person key={person.id} person={person} />
             )}
         </ul>
       )
