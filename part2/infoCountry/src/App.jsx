@@ -76,12 +76,29 @@ function App() {
     }    
   }
 
+  const handleClickShow = (nameCountrySelected) => {
+
+    console.log("Click: ", nameCountrySelected)
+    countryService
+      .getCountry(nameCountrySelected)
+      .then(response => {
+        console.log("Respuesta país recibida", response)
+        const newCountrySearch ={
+          control: 3,
+          message: '',
+          namesSearch: [],
+          responseCountry: response
+        }
+        setCountrySearch(newCountrySearch)
+      })   
+  }
+
   return (
     <div>
       <div>
         Find countries <input onChange={handleCountryChange} />  
       </div>
-        <CSearch dataSearch={countrySearch}/>
+        <CSearch dataSearch={countrySearch} handleClick={handleClickShow}/>
     </div>
   )
 }

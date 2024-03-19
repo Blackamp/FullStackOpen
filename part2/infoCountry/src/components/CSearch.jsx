@@ -15,9 +15,9 @@ const CSearch = (props) => {
     {
       console.log("CS lista", countrySearch.namesSearch)
       return (
-          <p>
-            {countrySearch.namesSearch.map(nc => <li>{nc}</li>)}
-          </p>
+          <div>
+            {countrySearch.namesSearch.map(nc => <div key={nc}>{nc}  <button onClick={() => props.handleClick(nc)}>Show</button></div>)}
+          </div>
         )
     
     }
@@ -25,14 +25,13 @@ const CSearch = (props) => {
     {
         console.log("Response ", countrySearch.responseCountry)
         const languagesCountry = Object.values(countrySearch.responseCountry.languages)
-        console.log("flag ", countrySearch.flags)
         return(
             <div>
                 <h1>{countrySearch.responseCountry.name.common}</h1>
                 <p>Capital: {countrySearch.responseCountry.capital} </p>
                 <p>Area: {countrySearch.responseCountry.area} </p>
                 <h3>Languages:</h3>
-                {languagesCountry.map( l => <li>{l}</li> )}
+                {languagesCountry.map( l => <li key={l}>{l}</li> )}
                 <br></br>
                 <img src={countrySearch.responseCountry.flags.png}/>
 
