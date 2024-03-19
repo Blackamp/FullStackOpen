@@ -7,9 +7,11 @@ function App() {
     control: 0,
     message: '',
     namesSearch: [],
-    responseCountry: null
+    responseCountry: null,
   })
   const [allCountry, setAllCountry] = useState(null)
+  const [weatherCountry, setWeatherCountry] = useState(null)
+  const [cityCountry, setCityCountry] = useState(null)
 
   useEffect(() => {
     console.log('effect')
@@ -21,12 +23,25 @@ function App() {
     })
   }, [])
 
-  console.log('Countries: ', allCountry)
+
+  useEffect(() => {
+    console.log('effect weather')
+    if( cityCountry !== null)
+    {
+      console.log("CityCountry ", cityCountry)
+      countryService
+      .getWeather(cityCountry)
+      .then(responseWeather => {
+        console.log("Info de weather ", responseWeather)
+        setWeatherCountry(responseWeather)
+      })
+     }
+   }, [cityCountry])
+  
 
     // no renderizar nada si allCountry aún es null
-    if (!allCountry) { 
+    if (!allCountry)
       return null 
-    }
 
 
   //Handle events
@@ -41,7 +56,7 @@ function App() {
         control: 1,
         message: "Too many matches, specify another filter",
         namesSearch: [],
-        responseCountry: null
+        responseCountry: null,
       }
       setCountrySearch(newCountrySearch)
       
@@ -55,7 +70,7 @@ function App() {
         control: 2,
         message: '',
         namesSearch: namesCountry,
-        responseCountry: null
+        responseCountry: null,
       }
       setCountrySearch(newCountrySearch)
 
@@ -69,9 +84,11 @@ function App() {
             control: 3,
             message: '',
             namesSearch: [],
-            responseCountry: response
+            responseCountry: response,
           }
           setCountrySearch(newCountrySearch)
+          setCityCountry(newCountrySearch.responseCountry.capital[0])
+
         })
     }    
   }
@@ -87,9 +104,10 @@ function App() {
           control: 3,
           message: '',
           namesSearch: [],
-          responseCountry: response
+          responseCountry: response,
         }
         setCountrySearch(newCountrySearch)
+        setCityCountry(newCountrySearch.responseCountry.capital[0])
       })   
   }
 
@@ -98,7 +116,7 @@ function App() {
       <div>
         Find countries <input onChange={handleCountryChange} />  
       </div>
-        <CSearch dataSearch={countrySearch} handleClick={handleClickShow}/>
+        <CSearch dataSearch={countrySearch} weatherCity={weatherCountry} handleClick={handleClickShow}/>
     </div>
   )
 }

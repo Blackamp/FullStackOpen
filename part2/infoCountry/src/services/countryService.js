@@ -13,4 +13,12 @@ const getCountry = (nameCountry) => {
   return request.then(response => response.data)
 }
 
-export default { getAll, getCountry }
+const getWeather = (nameCountry) => {
+  console.log("getWeather ",nameCountry)
+  const api_key = import.meta.env.VITE_SOME_KEY
+  console.log("API ",api_key)
+  const request = axios.get(`https://api.openweathermap.org/data/2.5/weather?q=${nameCountry}&appid=${api_key}&&units=metric`)
+  return request.then(response => response.data)
+}
+
+export default { getAll, getCountry, getWeather }
