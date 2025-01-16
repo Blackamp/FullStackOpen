@@ -1,7 +1,9 @@
 const express = require('express')
 const app = express()
+app.use(express.json()) // Necesario para express use y trabaje con JSON
 
-//E3.4
+
+//E3.5 & E3.6
 
 
 //Contactos iniciales
@@ -44,6 +46,37 @@ app.get('/api/persons', (request, response) => {
   response.json(persons)
 })
 
+// POST /api/person
+const generateId = () => {
+  const newId = Math.floor(Math.random()* (9999999 - 1) + 1);
+  return newId
+}
+  
+app.post('/api/persons', (request, response) => {
+  const body = request.body
+  console.log("",body)
+ 
+  if (!body.name || !body.phone) {
+    return response.status(400).json({ 
+      error: 'content missing' 
+    })
+  }else if(persons.some(i => i.name === body.name)) {
+      return response.status(400).json({ 
+          error: 'name must be unique' 
+        })
+  }
+  
+  const newContact = {
+    name: body.name,
+    phone: body.phone,
+    id: generateId(),
+  }
+  
+  persons = persons.concat(newContact)
+  response.json(newContact)
+})
+
+
 //GET /api/persons/id 
 app.get('/api/persons/:id', (request, response) => {
     const id = Number(request.params.id)
@@ -55,6 +88,7 @@ app.get('/api/persons/:id', (request, response) => {
       response.status(404).end()
     }
   })
+
 
 // DELETE /api/persons/id
 app.delete('/api/persons/:id', (request, response) => {
