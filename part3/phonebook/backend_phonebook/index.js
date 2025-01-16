@@ -1,7 +1,7 @@
 const express = require('express')
 const app = express()
 
-//E3.3
+//E3.4
 
 
 //Contactos iniciales
@@ -56,9 +56,16 @@ app.get('/api/persons/:id', (request, response) => {
     }
   })
 
+// DELETE /api/persons/id
+app.delete('/api/persons/:id', (request, response) => {
+    const id = Number(request.params.id)
+    persons = persons.filter(p => p.id !== id)
+    response.status(204).end()
+  })
+
+
 
 //Levantamos el servidor
-
 const PORT = 3001
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
