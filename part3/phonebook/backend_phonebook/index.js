@@ -1,7 +1,7 @@
 const express = require('express')
 const app = express()
 
-//E3.2
+//E3.3
 
 
 //Contactos iniciales
@@ -39,10 +39,22 @@ app.get('/info', (request, response) => {
   response.send(resume)
 })
 
-// GET /api/persons
+// GET /api/persons (ALL)
 app.get('/api/persons', (request, response) => {
   response.json(persons)
 })
+
+//GET /api/persons/id 
+app.get('/api/persons/:id', (request, response) => {
+    const id = Number(request.params.id)
+    const contact = persons.find(p => p.id === id)
+    
+    if (contact) {
+      response.json(contact)
+    } else {
+      response.status(404).end()
+    }
+  })
 
 
 //Levantamos el servidor
