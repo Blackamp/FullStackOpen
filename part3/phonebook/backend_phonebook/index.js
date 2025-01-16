@@ -1,7 +1,7 @@
 const express = require('express')
 const app = express()
 
-//E3.1
+//E3.2
 
 
 //Contactos iniciales
@@ -31,6 +31,13 @@ let persons = [
 
 /* *** SERVICES *** */
 
+// GET /info
+app.get('/info', (request, response) => {
+  const hfActual = new Date ()
+  hfActual.toUTCString()
+  const resume = "<p>Phonebook has info for " +persons.length+ " people.</p><p>"+ hfActual + "</p>"
+  response.send(resume)
+})
 
 // GET /api/persons
 app.get('/api/persons', (request, response) => {
