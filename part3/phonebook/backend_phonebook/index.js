@@ -3,7 +3,22 @@ const app = express()
 app.use(express.json()) // Necesario para express use y trabaje con JSON
 
 
-//E3.5 & E3.6
+//E3.7 & E3.8
+
+
+/* *** MORGAN *** */
+var morgan = require('morgan')
+morgan.token('data', function (req, res) { return JSON.stringify(req.body)})
+
+//Morgan logger para el método POST
+app.use(morgan(':method :url :status :res[content-length] - :response-time ms / :data',{
+    skip: function (req,res) { return req.method !== "POST"}
+}))
+
+//Morgan logger para el resto de métodos
+app.use(morgan('tiny',{
+    skip: function (req,res) { return req.method == "POST"}
+}))
 
 
 //Contactos iniciales
@@ -32,6 +47,11 @@ let persons = [
 
 
 /* *** SERVICES *** */
+
+//Default
+const unknownEndpoint = (request, response) => {
+  response.status(404).send({ error: 'unknown endpoint' })
+}
 
 // GET /info
 app.get('/info', (request, response) => {
@@ -97,6 +117,8 @@ app.delete('/api/persons/:id', (request, response) => {
     response.status(204).end()
   })
 
+
+  app.use(unknownEndpoint)
 
 
 //Levantamos el servidor
