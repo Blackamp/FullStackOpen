@@ -1,3 +1,4 @@
+require('dotenv').config() //Importamos las variables de entorno definidas en el archivo .env
 const express = require('express')
 const app = express()
 app.use(express.json()) // Necesario para express use y trabaje con JSON
@@ -22,30 +23,9 @@ app.use(morgan('tiny',{
 }))
 
 
+//Importamos el modelo para acceder a la base de datos MongoDB
+const Person = require('./models/person')
 
-//Contactos iniciales
-let persons = [
-    { 
-      "id": 1,
-      "name": "Arto Hellas", 
-      "phone": "040-123456"
-    },
-    { 
-      "id": 2,
-      "name": "Ada Lovelace", 
-      "phone": "39-44-5323523"
-    },
-    { 
-      "id": 3,
-      "name": "Dan Abramov", 
-      "phone": "12-43-234345"
-    },
-    { 
-      "id": 4,
-      "name": "Mary Poppendieck", 
-      "phone": "39-23-6423122"
-    }
-]
 
 
 /* *** SERVICES *** */
@@ -57,35 +37,27 @@ let persons = [
 
   // GET /info
   app.get('/info', (request, response) => {
-    const hfActual = new Date ()
+    /*const hfActual = new Date ()
     hfActual.toUTCString()
     const resume = "<p>Phonebook has info for " +persons.length+ " people.</p><p>"+ hfActual + "</p>"
-    response.send(resume)
+    response.send(resume)*/
   })
 
   // GET /api/persons
   app.get('/api/persons', (request, response) => {
-    response.json(persons)
+    Person.find({}).then(persons => {
+      response.json(persons)
+    })
   })
 
   // GET /api/persons/id
   app.get('/api/persons/:id', (request, response) => {
-    const id = Number(request.params.id)
-    const contact = persons.find(p => p.id === id)
-    console.log("ID:", id, " Contact:", contact)
-    if (contact) {
-      response.json(contact)
-    } else {
-      response.status(404).end()
-    }
+    Person.findById(request.params.id).then(person => {
+      response.json(person)
+    })
   })
 
   // POST /api/person
-  const generateId = () => {
-    const newId = Math.floor(Math.random()* (9999999 - 1) + 1);
-    return newId
-  }
-  
   app.post('/api/persons', (request, response) => {
     const body = request.body
     //console.log(body)
@@ -94,35 +66,36 @@ let persons = [
       return response.status(400).json({ 
         error: 'content missing' 
       })
-    }else if(persons.some(i => i.name === body.name)) {
+    }/*else if(persons.some(i => i.name === body.name)) {
         return response.status(400).json({ 
             error: 'name must be unique' 
           })
-    }
+    }*/
   
-    const newContact = {
+    const newContact = new Person({
       name: body.name,
       phone: body.phone,
-      id: generateId(),
-    }
+    })
   
-    persons = persons.concat(newContact)
-    response.json(newContact)
+    newContact.save().then(savedContact => {
+      response.json(savedContact)
+    })
   })
 
   // DELETE /api/persons/id
   app.delete('/api/persons/:id', (request, response) => {
-    const id = Number(request.params.id)
+    /*const id = Number(request.params.id)
     persons = persons.filter(p => p.id !== id)
   
-    response.status(204).end()
+    response.status(204).end()*/
   })
 
   app.use(unknownEndpoint)
 
 
 //Levantamos el servidor
-  const PORT = process.env.PORT || 3001
+
+const PORT = process.env.PORT
   app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`)
   })
