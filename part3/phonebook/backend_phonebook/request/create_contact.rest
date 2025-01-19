@@ -1,0 +1,15 @@
+GET https://fso-backend-phonebook.onrender.com/api/persons/4
+
+###
+
+GET https://fso-backend-phonebook.onrender.com/api/persons/
+
+###
+
+POST https://fso-backend-phonebook.onrender.com/api/persons/ HTTP/1.1
+content-type: application/json
+
+{
+    "name": "Pedro Juan Perez",
+    "phone": "666777888"
+}
