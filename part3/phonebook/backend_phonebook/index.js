@@ -14,12 +14,12 @@ morgan.token('data', function (req, res) { return JSON.stringify(req.body)})
 
 //Morgan logger para el método POST
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms / :data',{
-    skip: function (req,res) { return req.method !== "POST"}
+  skip: function (req,res) { return req.method !== 'POST'}
 }))
 
 //Morgan logger para el resto de métodos
 app.use(morgan('tiny',{
-    skip: function (req,res) { return req.method == "POST"}
+  skip: function (req,res) { return req.method === 'POST'}
 }))
 
 
@@ -33,14 +33,14 @@ const Person = require('./models/person')
 // Default
 const unknownEndpoint = (request, response) => {
   response.status(404).send({ error: 'unknown endpoint' })
- }
+}
 
 // GET /info
 app.get('/info', (request, response) => {
   const hfActual = new Date ()
   hfActual.toUTCString()
   Person.find({}).then(persons => {
-    const resume = "<p>Phonebook has info for " +persons.length+ " people.</p><p>"+ hfActual + "</p>"
+    const resume = '<p>Phonebook has info for ' +persons.length+ ' people.</p><p>'+ hfActual + '</p>'
     response.send(resume)
   })
 })
@@ -55,29 +55,28 @@ app.get('/api/persons', (request, response) => {
 // GET /api/persons/id
 app.get('/api/persons/:id', (request, response, next) => {
   Person.findById(request.params.id)
-  .then(person => {
-    if (person) {
-      response.json(person)
-    } else {
-      response.status(404).end()
-    }
-  })
-  .catch(error => next(error))
-  
+    .then(person => {
+      if (person) {
+        response.json(person)
+      } else {
+        response.status(404).end()
+      }
+    })
+    .catch(error => next(error))
 })
 
 // POST /api/person
-app.post('/api/persons', (request, response) => {
+app.post('/api/persons', (request, response,next) => {
   const body = request.body
   //console.log(body)
 
-  if (!body.name || !body.phone) {
-    return response.status(400).json({ 
-      error: 'content missing' 
+  /*if (!body.name || !body.phone) {
+    return response.status(400).json({
+      error: 'content missing'
     })
-  }/*else if(persons.some(i => i.name === body.name)) {
-      return response.status(400).json({ 
-          error: 'name must be unique' 
+  }else if(persons.some(i => i.name === body.name)) {
+      return response.status(400).json({
+          error: 'name must be unique'
         })
   }*/
 
@@ -85,24 +84,26 @@ app.post('/api/persons', (request, response) => {
     name: body.name,
     phone: body.phone,
   })
-  
-  newContact.save().then(savedContact => {
-    response.json(savedContact)
-  })
+
+  newContact.save()
+    .then(savedContact => {
+      response.json(savedContact)
+    })
+    .catch(error => next(error))
 })
 
 // UPDATE /api/persons/id
 app.put('/api/persons/:id', (request, response, next) => {
   const body = request.body
 
-  console.log("Update: ", body)
+  console.log('Update: ', body)
 
   const contact ={
     name: body.name,
     phone: body.phone,
   }
 
-  Person.findByIdAndUpdate(request.params.id, contact, { phone: body.phone })
+  Person.findByIdAndUpdate(request.params.id, contact, { phone: body.phone, runValidators: true, context: 'query' })
     .then(updateContact => {
       updateContact.phone = body.phone
       response.json(updateContact)
@@ -125,12 +126,14 @@ app.use(unknownEndpoint)
 
 const errorHandler = (error, request, response, next) => {
 
-  console.log(error)
+  console.log(error.message)
 
   if (error.name === 'CastError') {
     return response.status(400).send({ error: 'malformatted id' })
   }else if (error.name === 'SyntaxError') {
-    return response.status(400).send({ error: 'content missing id' })
+    return response.status(400).send({ error: 'Sintax Error' })
+  } else if (error.name === 'ValidationError') {
+    return response.status(400).json({ error: error.message })
   }
 
   next(error)
@@ -142,6 +145,6 @@ app.use(errorHandler)
 
 //Levantamos el servidor
 const PORT = process.env.PORT
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`)
-  })
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`)
+})

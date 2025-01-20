@@ -61,9 +61,10 @@ const App = () => {
           })
           .catch(error => {
             //alert(`The contact '${changedContact.name}' was already deleted from server`)
-            setNotificationMessage(`Err: The contact '${changedContact.name}' was already deleted from server`)
+            console.log(error.response.data.error)
+            setNotificationMessage("Err update contact: "+error.response.data.error)
             setTimeout(() => {setNotificationMessage(null)}, 10000)
-            setPersons(persons.filter(p => p.id !== changedContact.id))
+            //setPersons(persons.filter(p => p.id !== changedContact.id))
           })
       }
     }
@@ -71,7 +72,6 @@ const App = () => {
       contactService
       .create(newContact)
       .then(returnedContact => {
-
         setNotificationMessage(`The contact ${returnedContact.name} has been added to the phonebook`)
         setTimeout(() => {setNotificationMessage(null)}, 7000)  
         setPersons(persons.concat(returnedContact))
@@ -79,6 +79,11 @@ const App = () => {
         setNewPhone('')
         setNewSearch('')
         setFilterState(false)
+      })
+      .catch(error => {
+        console.log(error.response.data.error)
+        setNotificationMessage("Error new contact: "+error.response.data.error)
+        setTimeout(() => {setNotificationMessage(null)}, 10000)
       })
 
     }
@@ -99,6 +104,7 @@ const App = () => {
           setPersons(persons.filter(p => p.id !== contactToDelete.id))
         })
         .catch(error => {
+          console.log(error.response.data.error)
           //alert(`The contact '${contactToDelete.name}' couldn't be deleted from server`)
           setNotificationMessage(`Err: The contact '${contactToDelete.name}' couldn't be deleted from server`)
           setTimeout(() => {setNotificationMessage(null)}, 10000)

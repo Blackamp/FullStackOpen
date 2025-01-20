@@ -1,9 +1,8 @@
-DELETE https://fso-backend-phonebook.onrender.com/api/persons/678d6f206aa59de174f2d159
+DELETE https://fso-backend-phonebook.onrender.com/api/persons/678d6f206aa74f2d159
 
 ###
 
 DELETE http://localhost:3001/api/persons/678d5bc93a319dsfsdfsdf
-
 ###
 
 GET http://localhost:3001/api/persons/
