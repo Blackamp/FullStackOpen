@@ -1,0 +1,21 @@
+GET http://localhost:3001/api/persons/
+
+###
+
+PUT http://localhost:3001/api/persons/678d4ae0e04da3cf808d461a
+Content-Type: application/json
+
+  {
+    "name": "Juanito Valderrama",
+    "phone": "5555555555"
+  }
+
+###
+
+PUT https://fso-backend-phonebook.onrender.com/api/persons/678e14eda8957f05ffac6988 HTTP/1.1
+Content-Type: application/json
+
+  {
+    "name": "Prueb",
+    "phone": "11111111111"
+  }
