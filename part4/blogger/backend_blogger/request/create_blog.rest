@@ -6,8 +6,8 @@ POST http://localhost:3003/api/blogs/
 Content-Type: application/json
 
 {
-    "title": "Review Alas de Sangre",
-    "author": "Mario Black",
+    "title": "Programar con React y Node",
+    "author": "Black",
     "url": "",
-    "likes": 57
+    "likes": 565
 }
