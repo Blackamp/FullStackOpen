@@ -5,15 +5,36 @@ const mongoose = require('mongoose')
 const helper = require('./test_helper')
 const app = require('../app')
 const api = supertest(app)
+const bcrypt = require('bcrypt')
+const jwt = require('jsonwebtoken')
 
 const Blog = require('../models/blog')
+const User = require('../models/user')
+
+let token
 
 beforeEach(async () => {
+  //Elimino todos los usuarios de la bbdd
+  await User.deleteMany({})
+  //Creo un usuario de pruebas
+  const passwordHash = await bcrypt.hash('sekret', 10)
+  const user = new User({ username: 'userTest', passwordHash })
+  await user.save()
+
+  //Obtengo el token del usuario
+  const userForToken = {
+    username: user.username,
+    id: user._id,
+  }
+  token = jwt.sign(userForToken, process.env.SECRET)
+
+  //Inicializo de 0 la BBDD con los blogs iniciales y su usuario
   await Blog.deleteMany({})
-  await Blog.insertMany(helper.initialBlogs)
+  const blogsWithUser = helper.initialBlogs.map( blog => new Blog({...blog, user:user.id}))
+  await Blog.insertMany(blogsWithUser)
 })
 
-//Test GET
+//Test BLOG GET
 describe('when there is initially some notes saved', () => {
 
   test('blogs are returned as json', async () => {
@@ -41,7 +62,7 @@ describe('when there is initially some notes saved', () => {
   })
 })
 
-//Test POST
+//Test BLOG POST
 describe('addition of a new note', () => {
 
   test('a valid blog can be added: succeeds with valid data', async () => {
@@ -54,6 +75,7 @@ describe('addition of a new note', () => {
 
     await api
       .post('/api/blogs')
+      .set('Authorization', `Bearer ${token}`)
       .send(newBlog)
       .expect(201)
       .expect('Content-Type', /application\/json/)
@@ -76,6 +98,7 @@ describe('addition of a new note', () => {
 
     await api
       .post('/api/blogs')
+      .set('Authorization', `Bearer ${token}`)
       .send(newBlog)
       .expect(201)
       .expect('Content-Type', /application\/json/)
@@ -103,6 +126,7 @@ describe('addition of a new note', () => {
     // Test sin título
     await api
     .post('/api/blogs')
+    .set('Authorization', `Bearer ${token}`)
     .send(newBlogWithoutTitle)
     .expect(400)
     .expect('Content-Type', /application\/json/)
@@ -110,6 +134,7 @@ describe('addition of a new note', () => {
     // Test sin URL
     await api
     .post('/api/blogs')
+    .set('Authorization', `Bearer ${token}`)
     .send(newBlogWithoutUrl)
     .expect(400)
     .expect('Content-Type', /application\/json/)
@@ -120,9 +145,28 @@ describe('addition of a new note', () => {
     assert.strictEqual(blogAtEnd.length, helper.initialBlogs.length)
   })
 
+
+  test('adding a blog fails with 401 if token is not provided', async () => {
+    const newBlog = {
+      title: "Discover IA",
+      author: "Blackamp",
+      url: "www.blackAI.es",
+      likes: 8790
+    }
+
+    await api
+      .post('/api/blogs')
+      .set('Authorization', `Bearer 4783y8gfh3yrgfyg3ryugvf34ygfy3g68yg34f8fg83g4f`)
+      .send(newBlog)
+      .expect(401)
+
+    const blogAtEnd = await helper.blogsInDb()
+    assert.strictEqual(blogAtEnd.length, helper.initialBlogs.length)
+
+  })
 })
 
-//Test POST
+//Test BLOG PUT
 describe('Modification of a note: ', () => {
   test('a blog can be updated with a PUT request (Update Likes)', async () => {
 
@@ -139,6 +183,7 @@ describe('Modification of a note: ', () => {
 
     await api
       .put(`/api/blogs/${blogToUpdate.id}`)
+      .set('Authorization', `Bearer ${token}`)
       .send(updatedData)
       .expect(200)
       .expect('Content-Type', /application\/json/)
@@ -151,7 +196,7 @@ describe('Modification of a note: ', () => {
   })
 })
 
-//Test DELETE
+//Test BLOG DELETE
 describe('deletion of a note: ', () => {
   test('a blog can be deleted (204)', async () => {
 
@@ -161,6 +206,7 @@ describe('deletion of a note: ', () => {
     
     await api
       .delete(`/api/blogs/${blogToDelete.id}`)
+      .set('Authorization', `Bearer ${token}`)
       .expect(204)
 
     // Verificar que la base de datos cambió
