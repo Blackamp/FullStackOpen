@@ -1,6 +1,8 @@
 import { useState } from 'react'
+import PropTypes from 'prop-types'
 
-const Blog = ({blog, userid, handleUpdate, handleDelete }) => {
+
+const Blog = ({ blog, userid, handleUpdate, handleDelete }) => {
   const blogStyle = {
     paddingTop: 10,
     paddingLeft: 2,
@@ -15,14 +17,14 @@ const Blog = ({blog, userid, handleUpdate, handleDelete }) => {
   const showWhenVisible = { display: blogVisible ? '' : 'none' }
 
   const updateBlog = (event) => {
-    console.log("+1 like -"+ blog)
+    console.log('+1 like -'+ blog)
 
     const blogMoreLikes = {
       ...blog,
       likes: blog.likes+1,
       user: blog.user.id
     }
-    console.log("Handle update: " + JSON.stringify(blogMoreLikes))
+    console.log('Handle update: ' + JSON.stringify(blogMoreLikes))
     handleUpdate(blogMoreLikes)
   }
 
@@ -31,27 +33,35 @@ const Blog = ({blog, userid, handleUpdate, handleDelete }) => {
   )
 
   const deleteBlog  = (event) => {
-    console.log("To Delete: "+ blog)
+    console.log('To Delete: '+ blog)
     handleDelete(blog.id)
   }
 
-  console.log ("userid "+userid+" = Userblog"+ blog.user.id)
+  console.log ('userid '+userid+' = Userblog'+ blog.user.id)
 
   return (
-  <div style={blogStyle}>
+    <div style={blogStyle}>
 
-    <div style={hideWhenVisible}>
-      <div>{blog.title} of {blog.author}<button onClick={() => setBlogVisible(true)}>View</button></div>
-    </div>
+      <div style={hideWhenVisible}>
+        <div>{blog.title} of {blog.author}<button onClick={() => setBlogVisible(true)}>View</button></div>
+      </div>
 
-    <div style={showWhenVisible}>
-      <div>{blog.title} of {blog.author} <button onClick={() => setBlogVisible(false)}>Hide</button></div>
-      <div>{blog.url}</div>
-      <div>Likes ♡ - {blog.likes} <button onClick={updateBlog}>like</button></div>
-      <div>{blog.user.name}</div>
-      {userid === blog.user.id && showButtonDelete()}
+      <div style={showWhenVisible}>
+        <div>{blog.title} of {blog.author} <button onClick={() => setBlogVisible(false)}>Hide</button></div>
+        <div>{blog.url}</div>
+        <div>Likes ♡ - {blog.likes} <button onClick={updateBlog}>like</button></div>
+        <div>{blog.user.name}</div>
+        {userid === blog.user.id && showButtonDelete()}
+      </div>
     </div>
-</div>
-)}
+  )}
+
+Blog.propTypes = {
+  blog: PropTypes.object.isRequired,
+  userid: PropTypes.string.isRequired,
+  handleUpdate: PropTypes.func.isRequired,
+  handleDelete: PropTypes.func.isRequired
+}
+
 
 export default Blog
