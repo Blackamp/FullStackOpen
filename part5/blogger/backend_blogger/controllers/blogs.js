@@ -52,19 +52,22 @@ blogsRouter.put('/:id', async (request, response, next) => {
     return response.status(404).json({ error: 'blog not found' })
   }
 
+  /*
   // Comprobar si el usuario actual es el creador del blog
   if (blogToUpdate.user.toString() !== user.id.toString()) {
     return response.status(401).json({ error: 'unauthorized to update this blog' })
-  }
+  }*/
 
   const updatedData  = {
     title: body.title,
     author: body.author,
     url: body.url,
-    likes: request.body.likes ?? 0
+    likes: body.likes,
+    user: body.user // Asegúrate de mantener la referencia
+
   }
 
-    updatedBlog = await Blog.findByIdAndUpdate(request.params.id, updatedData , { new: true })
+    updatedBlog = await Blog.findByIdAndUpdate(request.params.id, updatedData , { new: true }).populate('user', { username: 1, name: 1 })
     if (updatedBlog) {
       response.json(updatedBlog)
     } else {
@@ -83,7 +86,6 @@ blogsRouter.delete('/:id', async (request, response, next) => {
   if (!blogDelete) {
     return response.status(404).json({ error: 'blog not found' })
   }
-
 
   if (blogDelete.user.toString() === request.user.id.toString()) {
     await Blog.findByIdAndDelete(blogDelete.id)

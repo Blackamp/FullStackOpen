@@ -1,21 +1,21 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Blog from './components/Blog'
 import BlogForm from './components/BlogForm'
+import LoginForm from './components/LoginForm'
 import Notification from './components/Notification'
-
+import Togglable from './components/Togglable'
 import blogService from './services/blogs'
 import loginService from './services/login'
 
 
 const App = () => {
   const [blogs, setBlogs] = useState([])
-  const [newBTitle, setNewBTitle] = useState('')
-  const [newBAuthor, setNewBAuthor] = useState('')
-  const [newBUrl, setNewBNUrl] = useState('')
   const [username, setUsername] = useState('') 
   const [password, setPassword] = useState('') 
   const [user, setUser] = useState(null)
   const [notificationMessage, setNotificationMessage] = useState(null)
+  const blogFormRef = useRef()
+
 
 
   //Effect-hook para la solicitud y carga inicial de las notas
@@ -24,7 +24,7 @@ const App = () => {
       .getAll()
       .then(blogs =>
         setBlogs(blogs)
-      )  
+      ) 
   }, [])
 
   //Effect-hook obtener el token de usuario si está logado
@@ -45,6 +45,7 @@ const App = () => {
   
       try {
         const user = await loginService.login({username, password,})
+        console.log(user)
         window.localStorage.setItem(
           'loggedNoteappUser', JSON.stringify(user)
         ) 
@@ -67,23 +68,24 @@ const App = () => {
     setTimeout(() => {setNotificationMessage(null)}, 3500)
   }
 
-  const loginForm = () => (
-    <form onSubmit={handleLogin}>
-      <div>Username: <input type="text" value={username} name="Username" onChange={({ target }) => setUsername(target.value)}/></div>
-      <div>Password: <input type="password" value={password} name="Password" onChange={({ target }) => setPassword(target.value)}/></div>
-      <button type="submit">login</button>
-    </form>
-  )
+  const loginForm = () => {
+    return (
+      <Togglable buttonLabel='Log in'>
+        <LoginForm
+          username={username}
+          password={password}
+          handleUsernameChange={({ target }) => setUsername(target.value)}
+          handlePasswordChange={({ target }) => setPassword(target.value)}
+          handleSubmit={handleLogin}
+        />
+      </Togglable>
+    )
+  }
 
   //Create new Blogs
-  const addBlog = event => {
-    event.preventDefault()
+   const addBlog = (newBlogAdd) => {
+    blogFormRef.current.toggleVisibility()
 
-    const newBlogAdd = {
-      title: newBTitle,
-      author: newBAuthor,
-      url: newBUrl
-    }
     console.log("New BLOG: " + JSON.stringify(newBlogAdd))
 
     blogService
@@ -92,26 +94,59 @@ const App = () => {
         setNotificationMessage(`A new blog ${returnedBlog.title} added`)
         setTimeout(() => {setNotificationMessage(null)}, 7000)  
         setBlogs(blogs.concat(returnedBlog))
-        setNewBTitle('')
-        setNewBAuthor('')
-        setNewBNUrl('')
     })      
     .catch(error => {
-      console.log(error.response.data.error)
+      console.log("Err new blog:"+error.response.data.error)
       setNotificationMessage("Err new blog: " + error.response.data.error)
       setTimeout(() => {setNotificationMessage(null)}, 7000)
     })
   }
 
-  const handleBTitleChange = event => {
-    setNewBTitle(event.target.value)
+  //Update likes Blog
+  const updateBlog = (blogToUpdate) => {
+
+    console.log("Update blog: " + JSON.stringify(blogToUpdate))
+
+    blogService
+      .update(blogToUpdate.id, blogToUpdate)
+      .then(returnedBlog => {
+        setNotificationMessage(`The blog ‘${returnedBlog.title}’ received a like!`)
+        setTimeout(() => {setNotificationMessage(null)}, 7000)          
+        setBlogs(blogs.map(b => b.id !== blogToUpdate.id ? b : returnedBlog))
+      })
+      .catch(error => {
+        console.log("Axios error object:", error)
+        console.log("Axios error response:", error.response)
+        //console.log("Err update contact: "+ console.log(error.response.data.error))
+        setNotificationMessage("Err update contact: "+error.response.data.error)
+        setTimeout(() => {setNotificationMessage(null)}, 7000)
+      })
   }
-  const handleBAuthorChange = event => {
-    setNewBAuthor(event.target.value)
+
+  //Delete blog
+  const deleteContact = id => {
+    console.log(`handleDelete`)
+
+    const blogToDelete = blogs.find(b => b.id === id)
+
+    if (window.confirm(`Remove blog ‘${blogToDelete.title}’ by ${blogToDelete.author}?`)) {
+      console.log(`Delete ${blogToDelete.id} now!!!!!!`)
+      blogService
+        .deleteBlog(blogToDelete.id)
+        .then(() => {
+          setNotificationMessage(`The blog ‘${blogToDelete.title}’ by ${blogToDelete.author} has been deleted on the server`)
+          setTimeout(() => {setNotificationMessage(null)}, 7000)  
+          setPersons(blogs.filter(b => b.id !== blogToDelete.id))
+        })
+        .catch(error => {
+          console.log(error.response.data.error)
+          setNotificationMessage(`Err: The blog ‘${blogToDelete.title}’ couldn't be deleted from server - ` + error.response.data.error)
+          setTimeout(() => {setNotificationMessage(null)}, 10000)
+          
+        })
+    }
   }
-  const handleBUrlChange = event => {
-    setNewBNUrl(event.target.value)
-  }
+
   
   //Comprobamos si estamos logados para mostrar pantalla de login o la aplicación 
   if (user === null){
@@ -134,13 +169,16 @@ const App = () => {
       </div>
       
       <br></br>
-      <h3>Add a new Blog</h3>
-      <BlogForm handleForm={addBlog} titleBlog={newBTitle} handleEventTitle={handleBTitleChange} authorBlog={newBAuthor} handleEventAuthor={handleBAuthorChange} urlBlog={newBUrl} handleEventUrl={handleBUrlChange} />
+      <Togglable buttonLabel="Create Blog" ref={blogFormRef}>
+        <BlogForm handleFormCreate={addBlog}/>
+      </Togglable>
       <br></br>
       <h3>Blogs</h3>
-      {blogs.map(blog =>
-        <Blog key={blog.id} blog={blog} />
-      )}
+      {blogs
+        .sort((a, b) => b.likes - a.likes)
+        .map(blog =>
+          <Blog key={blog.id} blog={blog} userid={user.id} handleUpdate={updateBlog} handleDelete={deleteContact} />
+        )}
     </div>
   )
 }
