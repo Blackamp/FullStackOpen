@@ -63,7 +63,7 @@ describe('when there is initially some notes saved', () => {
 })
 
 //Test BLOG POST
-describe('addition of a new note', () => {
+describe('addition of a new blog', () => {
 
   test('a valid blog can be added: succeeds with valid data', async () => {
     const newBlog = {
