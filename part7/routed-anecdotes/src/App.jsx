@@ -5,6 +5,9 @@ import {
   useNavigate
 } from 'react-router-dom'
 
+import  { useField } from './hooks'
+
+
 const Menu = () => {
   const padding = {
     paddingRight: 5
@@ -61,22 +64,37 @@ const Footer = () => (
 )
 
 const CreateNew = (props) => {
-  const [content, setContent] = useState('')
-  const [author, setAuthor] = useState('')
-  const [info, setInfo] = useState('')
+
+  /*
+  const content = useField('text') 
+  const author = useField('text') 
+  const info = useField('text')*/
+
+  //Para evitar pasar el reset al input y que nos de un warning separamos los objetos
+  const { reset: resetContent, ...content } = useField('text')
+  const { reset: resetAuthor, ...author } = useField('text')
+  const { reset: resetInfo, ...info } = useField('text')
+
 
   const navigate = useNavigate()
 
   const handleSubmit = (e) => {
     e.preventDefault()
     props.addNew({
-      content,
-      author,
-      info,
+      content: content.value,
+      author: author.value,
+      info: info.value,
       votes: 0
     })
     
     navigate('/')
+  }
+
+  const resetForm = (e) => {
+    e.preventDefault()   // evita que el form se envíe al pulsar el botón reset
+    resetContent()
+    resetAuthor()
+    resetInfo()
   }
 
   return (
@@ -85,17 +103,18 @@ const CreateNew = (props) => {
       <form onSubmit={handleSubmit}>
         <div>
           content
-          <input name='content' value={content} onChange={(e) => setContent(e.target.value)} />
+          <input {...content} />
         </div>
         <div>
           author
-          <input name='author' value={author} onChange={(e) => setAuthor(e.target.value)} />
+          <input {...author} />
         </div>
         <div>
           url for more info
-          <input name='info' value={info} onChange={(e)=> setInfo(e.target.value)} />
+          <input {...info} />
         </div>
         <button>create</button>
+        <button onClick={resetForm}>reset</button>
       </form>
     </div>
   )
@@ -151,7 +170,7 @@ const App = () => {
   const addNew = (anecdote) => {
     anecdote.id = Math.round(Math.random() * 10000)
     setAnecdotes(anecdotes.concat(anecdote))
-    setNotification(`a new anecdote '${anecdote.content} created!`)
+    setNotification(`a new anecdote '${anecdote.content}' created!`)
     setTimeout(() => {
         setNotification(null)
       }, 5000)
