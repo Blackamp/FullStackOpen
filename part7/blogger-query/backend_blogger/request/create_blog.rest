@@ -1,0 +1,22 @@
+GET http://localhost:3003/api/blogs/
+
+###
+
+POST http://localhost:3003/api/blogs
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IlJvb3QyIiwiaWQiOiI2ODFjODViZWZmZjgyMzI5OTRmMDliMWMiLCJpYXQiOjE3NDY2OTk3MzEsImV4cCI6MTc0NjcwMzMzMX0.yGAjUYn2ejR8ocUg9Iy87XBCwwTWzl4KSsd3xgEmCtM
+
+{
+"title": "Prueba refact all",
+"author": "RALL",
+"url": "www.burafu.com",
+"likes": 5555
+}
+
+
+
+###
+
+DELETE http://localhost:3003/api/blogs/681c91be0a477cfc699aa211
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IlJvb3QyIiwiaWQiOiI2ODFjODViZWZmZjgyMzI5OTRmMDliMWMiLCJpYXQiOjE3NDY2OTk3MzEsImV4cCI6MTc0NjcwMzMzMX0.yGAjUYn2ejR8ocUg9Iy87XBCwwTWzl4KSsd3xgEmCtM
+
