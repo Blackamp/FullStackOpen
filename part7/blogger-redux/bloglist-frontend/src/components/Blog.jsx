@@ -1,7 +1,26 @@
+import { useSelector, useDispatch } from 'react-redux'
+import { Link, useMatch, useNavigate, useParams } from 'react-router-dom'
+import { addCommentBlog, deleteThisBlog } from '../reducers/blogsReducer'
 import { useState } from 'react'
-import PropTypes from 'prop-types'
 
-const Blog = ({ blog, userid, handleUpdate, handleDelete }) => {
+
+
+
+const Blog = () => {
+  const blogs = useSelector((state) => state.blogs)// obtenemos blogs del store
+  const userId = useSelector((state) => state.user?.id)
+  const [newComment, setNewComment] = useState('')
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
+  const blogiD = useParams().id
+  const blog = blogs.find((u) => u.id === blogiD)
+
+
+  if (!blog) {
+    return <p>Blog no encontrado...</p>
+  }
+
+  //CSS
   const blogStyle = {
     paddingTop: 10,
     paddingLeft: 2,
@@ -10,12 +29,7 @@ const Blog = ({ blog, userid, handleUpdate, handleDelete }) => {
     marginBottom: 5,
   }
 
-  const [blogVisible, setBlogVisible] = useState(false)
-
-  const hideWhenVisible = { display: blogVisible ? 'none' : '' }
-  const showWhenVisible = { display: blogVisible ? '' : 'none' }
-
-  const updateBlog = (event) => {
+  const updateLikesBlog = async (event) => {
     console.log('+1 like -' + blog)
 
     const blogMoreLikes = {
@@ -24,50 +38,80 @@ const Blog = ({ blog, userid, handleUpdate, handleDelete }) => {
       user: blog.user.id,
     }
     console.log('Handle update: ' + JSON.stringify(blogMoreLikes))
-    handleUpdate(blogMoreLikes)
+    await dispatch(likeBlog(blogMoreLikes))
+  }
+
+  const updateAddCommentBlog = async (event) => {
+    event.preventDefault()
+    console.log('Add comment -' +  JSON.stringify(blog))
+
+    const blogWithNewComment = {
+      ...blog,
+      user: blog.user.id, //Necesario porque sino falla
+      comments: blog.comments.concat(newComment),
+    }
+
+    console.log('Handle update: ' + JSON.stringify(blogWithNewComment))
+    await dispatch(addCommentBlog(blogWithNewComment))
+    setNewComment('')
   }
 
   const showButtonDelete = () => (
     <button onClick={deleteBlog}>Remove blog</button>
   )
 
-  const deleteBlog = (event) => {
-    console.log('To Delete: ' + blog)
-    handleDelete(blog.id)
+  const deleteBlog = async (event) => {
+    console.log('To Delete: ' + JSON.stringify(blog))
+    const blogToDelete = blog
+
+    if (window.confirm(`Remove blog ‘${blogToDelete.title}’ by ${blogToDelete.author}?`,))
+    {
+      console.log(`Delete ${blogToDelete.id} now!!!!!!`)
+      await dispatch(deleteThisBlog(blogToDelete))
+      navigate('/')
+    }
   }
 
-  console.log('userid ' + userid + ' = Userblog' + blog.user.id)
+  console.log('userid ' + userId + ' = Userblog' + blog.user.id)
+  console.log(blog)
+
 
   return (
     <div style={blogStyle}>
-      <div style={hideWhenVisible} className="blog-summary">
-        <div>
-          {blog.title} of {blog.author}
-          <button onClick={() => setBlogVisible(true)}>View</button>
-        </div>
+      <h2>{blog.title}</h2>
+      <h3>{blog.author}</h3>
+      <p></p>
+      <div>{blog.url}</div>
+      <div>
+        Likes ♡ - {blog.likes} <button onClick={updateLikesBlog}>like</button>
       </div>
+      <div>added by {blog.user.name}</div>
+      <br></br>
+      {userId === blog.user.id && showButtonDelete()}
+      <br></br>
+      <div>
+        <h4>Comments</h4>
+        <form onSubmit={updateAddCommentBlog}>
+          <input
+            id="addComment"
+            value={newComment}
+            onChange={(event) => setNewComment(event.target.value)}
+          />
+          <button type="submit">Add comment</button>
+        </form>
 
-      <div style={showWhenVisible} className="blog-details">
-        <div>
-          {blog.title} of {blog.author}{' '}
-          <button onClick={() => setBlogVisible(false)}>Hide</button>
-        </div>
-        <div>{blog.url}</div>
-        <div>
-          Likes ♡ - {blog.likes} <button onClick={updateBlog}>like</button>
-        </div>
-        <div>{blog.user.name}</div>
-        {userid === blog.user.id && showButtonDelete()}
+        {(!blog.comments || blog.comments.length === 0) ? (
+          <p> + There aren't comments</p>
+        ) : (
+          <ul>
+            {blog.comments.map((comment, index) => (
+              <li key={index}>{comment}</li>
+            ))}
+          </ul>
+        )}
       </div>
     </div>
   )
-}
-
-Blog.propTypes = {
-  blog: PropTypes.object.isRequired,
-  userid: PropTypes.string.isRequired,
-  handleUpdate: PropTypes.func.isRequired,
-  handleDelete: PropTypes.func.isRequired,
 }
 
 export default Blog

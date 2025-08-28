@@ -47,7 +47,7 @@ export const setLogOut = () => {
   return (dispatch) => {
     window.localStorage.removeItem('loggedNoteappUser')
     dispatch(clearUser())
-    dispatch(setNotification("You've been logged out. See you soon!", 3))
+    dispatch(setNotification("You've been logged out. See you soon!", 1))
   }
 }
 

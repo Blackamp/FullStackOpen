@@ -66,6 +66,24 @@ export const likeBlog = (blogToUpdate) => {
   }
 }
 
+export const addCommentBlog = (blogToUpdate) => {
+  return async (dispatch) => {
+    try {
+      const updated = await blogsService.update(blogToUpdate.id, blogToUpdate)
+      dispatch(updateBlog(updated))
+      dispatch(
+        setNotification(`New comment added to ‘${updated.title}’`, 6),
+      )
+    } catch (error) {
+      console.log('Axios error comment object:', error)
+      console.log('Axios error comment response:', error.response)
+      dispatch(
+        setNotification('Err update comment blog: ' + error.response.data.error, 6),
+      )
+    }
+  }
+}
+
 export const deleteThisBlog = (blogToDelete) => {
   return async (dispatch) => {
     try {

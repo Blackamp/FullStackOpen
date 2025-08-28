@@ -4,49 +4,37 @@ import BlogForm from './components/BlogForm'
 import LoginForm from './components/LoginForm'
 import Notification from './components/Notification'
 import Togglable from './components/Togglable'
+import Users from './components/Users'
+import User from './components/User'
 import { useSelector, useDispatch } from 'react-redux'
 import { setNotification } from './reducers/notificationReducer'
-import {
-  initializeBlogs,
-  createBlog,
-  likeBlog,
-  deleteThisBlog,
-} from './reducers/blogsReducer'
+import { initializeBlogs, createBlog, likeBlog, deleteThisBlog } from './reducers/blogsReducer'
 import { checkLoginUser, setLogIn, setLogOut } from './reducers/userReducer'
+import { Routes, Route, Link, useMatch, useNavigate } from 'react-router-dom'
+
 
 const App = () => {
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
-  //const [user, setUser] = useState(null)
   const blogFormRef = useRef()
   const dispatch = useDispatch()
   const blogs = useSelector((state) => state.blogs) // obtenemos blogs del store
   const user = useSelector((state) => state.user) // obtenemos blogs del store
 
-  //Effect-hook para la solicitud y carga inicial de las notas
+  const blogStyle = {
+    paddingTop: 10,
+    paddingLeft: 1,
+    border: 'solid',
+    borderWidth: 1,
+    marginBottom: 5,
+  }
+
+  //Effect-hook para la solicitud y carga inicial de las notasy para obtener el token de usuario si está logado
   useEffect(() => {
     dispatch(initializeBlogs())
-  }, [])
-
-  //Effect-hook obtener el token de usuario si está logado
-  useEffect(() => {
     dispatch(checkLoginUser())
   }, [])
 
-  //Login
-  const handleLogin = async (event) => {
-    event.preventDefault()
-    console.log('logging in with', username, password)
-    await dispatch(setLogIn(username, password))
-    //setUsername('')
-    //setPassword('')
-  }
 
-  const handleLogOut = (event) => {
-    //console.log('Log out')
-    dispatch(setLogOut())
-  }
-
+  /**** BLOGS FUNCTIONS ****/
   //Create new Blogs
   const addBlog = async (newBlogAdd) => {
     console.log('New BLOG: ' + JSON.stringify(newBlogAdd))
@@ -54,26 +42,44 @@ const App = () => {
     blogFormRef.current.toggleVisibility()
   }
 
-  //Update likes Blog
-  const updateBlog = async (blogToUpdate) => {
-    console.log('Update blog: ' + JSON.stringify(blogToUpdate))
-    await dispatch(likeBlog(blogToUpdate))
-  }
+  /*** APP ***/
+  const Menu = () => {
+    const padding = { paddingRight: 5 }
+    const navigate = useNavigate()
 
-  //Delete blog
-  const deleteBlog = async (id) => {
-    console.log('handleDelete')
-    const blogToDelete = blogs.find((b) => b.id === id)
-
-    if (
-      window.confirm(
-        `Remove blog ‘${blogToDelete.title}’ by ${blogToDelete.author}?`,
-      )
-    ) {
-      console.log(`Delete ${blogToDelete.id} now!!!!!!`)
-      await dispatch(deleteThisBlog(blogToDelete))
+    const handleLogout = () => {
+      dispatch(setLogOut())
+      navigate('/login') // redirige a /login
     }
+
+    return (
+      <div>
+        <Link style={padding} to="/">Blogger </Link>
+        <Link style={padding} to="/users">Users</Link>
+        {user.name} logged-in <button onClick={handleLogout}>logout</button>
+      </div>
+    )
   }
+
+  const BlogList = ({ blogsList }) => (
+  <div>
+    <h3>Blogs</h3>
+    <Togglable buttonLabel="Create Blog" ref={blogFormRef}>
+      <BlogForm handleFormCreate={addBlog} />
+    </Togglable>
+    <br></br>
+  
+    {[...blogsList]
+      .sort((a, b) => b.likes - a.likes)
+      .map((blog) => (
+        <div style={blogStyle} key={blog.id}>
+          <Link to={`/blogs/${blog.id}`}>{blog.title} of {blog.author}</Link>
+        </div>
+      ))
+    }
+
+  </div>
+)
 
   //Comprobamos si estamos logados para mostrar pantalla de login o la aplicación
   if (user === null) {
@@ -82,13 +88,7 @@ const App = () => {
         <h2>Log in to application</h2>
         <Notification />
         <Togglable buttonLabel="Log-in">
-          <LoginForm
-            username={username}
-            password={password}
-            handleUsernameChange={({ target }) => setUsername(target.value)}
-            handlePasswordChange={({ target }) => setPassword(target.value)}
-            handleSubmit={handleLogin}
-          />
+          <LoginForm />
         </Togglable>
       </div>
     )
@@ -99,27 +99,16 @@ const App = () => {
       <h2>Blogger Application</h2>
       <Notification />
 
-      <div>
-        {user.name} logged-in <button onClick={handleLogOut}>logout</button>
-      </div>
+      <Menu />
 
       <br></br>
-      <Togglable buttonLabel="Create Blog" ref={blogFormRef}>
-        <BlogForm handleFormCreate={addBlog} />
-      </Togglable>
-      <br></br>
-      <h3>Blogs</h3>
-      {[...blogs]
-        .sort((a, b) => b.likes - a.likes)
-        .map((blog) => (
-          <Blog
-            key={blog.id}
-            blog={blog}
-            userid={user.id}
-            handleUpdate={updateBlog}
-            handleDelete={deleteBlog}
-          />
-        ))}
+      <Routes>
+        <Route path="/login" element={<LoginForm />} />
+        <Route path="/" element={<BlogList blogsList={blogs} />} />
+        <Route path="/blogs/:id" element={<Blog />} />
+        <Route path="/users" element={<Users />} />
+        <Route path="/users/:id" element={<User />} />
+      </Routes>
     </div>
   )
 }
