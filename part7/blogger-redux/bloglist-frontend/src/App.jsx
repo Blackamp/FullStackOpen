@@ -11,6 +11,8 @@ import { setNotification } from './reducers/notificationReducer'
 import { initializeBlogs, createBlog, likeBlog, deleteThisBlog } from './reducers/blogsReducer'
 import { checkLoginUser, setLogIn, setLogOut } from './reducers/userReducer'
 import { Routes, Route, Link, useMatch, useNavigate } from 'react-router-dom'
+import { Container, AppBar, Toolbar, Button, Typography, Box } from '@mui/material';
+
 
 
 const App = () => {
@@ -53,22 +55,37 @@ const App = () => {
     }
 
     return (
-      <div>
-        <Link style={padding} to="/">Blogger </Link>
-        <Link style={padding} to="/users">Users</Link>
-        {user.name} logged-in <button onClick={handleLogout}>logout</button>
-      </div>
+      <AppBar position="static">
+        <Toolbar>
+          <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center' }}>
+            <Button color="inherit" component={Link} to="/" sx={padding}>
+              Blogger
+            </Button>
+            <Button color="inherit" component={Link} to="/users" sx={padding}>
+              Users
+            </Button>
+          </Box>
+          <Typography variant="body1" sx={{ marginRight: 2 }}>
+            {user.name} logged-in
+          </Typography>
+          <Button  variant="outlined" color="error" onClick={handleLogout}>
+            Logout
+          </Button>
+        </Toolbar>
+      </AppBar>
+     
     )
   }
 
   const BlogList = ({ blogsList }) => (
   <div>
-    <h3>Blogs</h3>
+    <h2>Blogs</h2>
     <Togglable buttonLabel="Create Blog" ref={blogFormRef}>
       <BlogForm handleFormCreate={addBlog} />
     </Togglable>
     <br></br>
   
+    <h3>List</h3>
     {[...blogsList]
       .sort((a, b) => b.likes - a.likes)
       .map((blog) => (
@@ -84,32 +101,36 @@ const App = () => {
   //Comprobamos si estamos logados para mostrar pantalla de login o la aplicación
   if (user === null) {
     return (
-      <div>
-        <h2>Log in to application</h2>
-        <Notification />
-        <Togglable buttonLabel="Log-in">
-          <LoginForm />
-        </Togglable>
-      </div>
+      <Container>
+        <div>
+          <h2>Log in to application</h2>
+          <Notification />
+          <Togglable buttonLabel="Log-in">
+            <LoginForm />
+          </Togglable>
+        </div>  
+      </Container>
+
     )
   }
 
   return (
-    <div>
-      <h2>Blogger Application</h2>
-      <Notification />
+    <Container>
+      <div>
+        <h2>Blogger Application</h2>
+        <Notification />
 
-      <Menu />
+        <Menu />
 
-      <br></br>
-      <Routes>
-        <Route path="/login" element={<LoginForm />} />
-        <Route path="/" element={<BlogList blogsList={blogs} />} />
-        <Route path="/blogs/:id" element={<Blog />} />
-        <Route path="/users" element={<Users />} />
-        <Route path="/users/:id" element={<User />} />
-      </Routes>
-    </div>
+        <br></br>
+        <Routes>
+          <Route path="/" element={<BlogList blogsList={blogs} />} />
+          <Route path="/blogs/:id" element={<Blog />} />
+          <Route path="/users" element={<Users />} />
+          <Route path="/users/:id" element={<User />} />
+        </Routes>
+      </div>
+    </Container>
   )
 }
 

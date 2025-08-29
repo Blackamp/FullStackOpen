@@ -1,7 +1,9 @@
 import { useSelector, useDispatch } from 'react-redux'
 import { Link, useMatch, useNavigate, useParams } from 'react-router-dom'
-import { addCommentBlog, deleteThisBlog } from '../reducers/blogsReducer'
+import { addCommentBlog, likeBlog, deleteThisBlog } from '../reducers/blogsReducer'
 import { useState } from 'react'
+import { Button, TextField } from '@mui/material'
+import DeleteIcon from '@mui/icons-material/Delete';
 
 
 
@@ -23,7 +25,7 @@ const Blog = () => {
   //CSS
   const blogStyle = {
     paddingTop: 10,
-    paddingLeft: 2,
+    paddingLeft: 15,
     border: 'solid',
     borderWidth: 1,
     marginBottom: 5,
@@ -57,7 +59,7 @@ const Blog = () => {
   }
 
   const showButtonDelete = () => (
-    <button onClick={deleteBlog}>Remove blog</button>
+    <Button variant="outlined" color='error' startIcon={<DeleteIcon />} onClick={deleteBlog}>Remove blog</Button>
   )
 
   const deleteBlog = async (event) => {
@@ -83,7 +85,7 @@ const Blog = () => {
       <p></p>
       <div>{blog.url}</div>
       <div>
-        Likes ♡ - {blog.likes} <button onClick={updateLikesBlog}>like</button>
+        Likes ♡ - {blog.likes} <Button variant="contained" color="success" size='small' onClick={updateLikesBlog}>like</Button>
       </div>
       <div>added by {blog.user.name}</div>
       <br></br>
@@ -92,12 +94,12 @@ const Blog = () => {
       <div>
         <h4>Comments</h4>
         <form onSubmit={updateAddCommentBlog}>
-          <input
+          <TextField variant='outlined' label='Comment' size='small'
             id="addComment"
             value={newComment}
             onChange={(event) => setNewComment(event.target.value)}
           />
-          <button type="submit">Add comment</button>
+          <Button variant="contained"  type="submit">Add comment</Button>
         </form>
 
         {(!blog.comments || blog.comments.length === 0) ? (

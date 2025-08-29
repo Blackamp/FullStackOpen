@@ -24,7 +24,8 @@ blogsRouter.post('/', async (request, response) => {
   const blogData = {
     ...request.body,
     likes: request.body.likes ?? 0,
-    user: user.id
+    user: user.id,
+    comments: []
   }
 
   if(blogData.title == undefined || blogData.url == undefined || blogData.title == '' || blogData.url == '' || blogData.title == null || blogData.url == null) {
@@ -65,8 +66,11 @@ blogsRouter.put('/:id', async (request, response, next) => {
     author: body.author,
     url: body.url,
     likes: body.likes,
-    user: body.user // Asegúrate de mantener la referencia
+    user: body.user, // Asegúrate de mantener la referencia
+  }
 
+  if (body.comments) {
+    updatedData.comments = body.comments
   }
 
     updatedBlog = await Blog.findByIdAndUpdate(request.params.id, updatedData , { new: true }).populate('user', { username: 1, name: 1 })

@@ -2,6 +2,11 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { setLogIn } from '../reducers/userReducer'
 import { useDispatch } from 'react-redux'
+import { Box, FormControl, InputLabel, Input, InputAdornment, Button } from '@mui/material'
+import AccountCircle from '@mui/icons-material/AccountCircle';
+import LockIcon from '@mui/icons-material/Lock';
+
+
 
 const LoginForm = () => {
   const navigate = useNavigate()
@@ -20,28 +25,44 @@ const LoginForm = () => {
     <div>
       <h2>Credentials</h2>
 
-      <form onSubmit={handleSubmit}>
-        <div>
-          username
-          <input
+      <Box
+        component="form"
+        onSubmit={handleSubmit}
+        sx={{ display: 'flex', flexDirection: 'column', gap: 2, width: 300, margin: 'auto', mt: 10 }}
+      >
+        <FormControl variant="standard">
+          <InputLabel htmlFor="username">Username</InputLabel>
+          <Input
             id="username"
             value={username}
-            onChange={({ target }) => setUsername(target.value)}
+            onChange={(e) => setUsername(e.target.value)}
+            startAdornment={
+              <InputAdornment position="start">
+                <AccountCircle />
+              </InputAdornment>
+            }
           />
-        </div>
-        <div>
-          password
-          <input
+        </FormControl>
+
+        <FormControl variant="standard">
+          <InputLabel htmlFor="password">Password</InputLabel>
+          <Input
             id="password"
             type="password"
             value={password}
-            onChange={({ target }) => setPassword(target.value)}
+            onChange={(e) => setPassword(e.target.value)}
+            startAdornment={
+              <InputAdornment position="start">
+                <LockIcon />
+              </InputAdornment>
+            }
           />
-        </div>
-        <button id="login-button" type="submit">
-          login
-        </button>
-      </form>
+        </FormControl>
+
+        <Button type="submit" variant="contained" color="primary">
+          Login
+        </Button>
+      </Box>
     </div>
   )
 }
