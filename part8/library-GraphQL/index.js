@@ -163,7 +163,8 @@ const resolvers = {
       if(!authors.includes(args.author)){
         const newAuthor = {
           name: args.author,
-          id: uuid()
+          id: uuid(),
+          bookCount:0
         }
         authors = authors.concat(newAuthor)
       }
@@ -174,7 +175,11 @@ const resolvers = {
       if (!authorToChange) {
         return null
       }
-      const updatedAuthor= { ...authorToChange, born: args.setBornTo }
+      const updatedAuthor= { 
+        ...authorToChange, 
+        born: args.setBornTo,
+        bookCount: books.filter(b => b.author === authorToChange.name).length
+      }
       authors = authors.map(a => a.name === args.name ? updatedAuthor : a)
       return updatedAuthor
     }   
