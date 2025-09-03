@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { CREATE_BOOK, ALL_AUTHORS, ALL_BOOKS } from '../queries'
+import { CREATE_BOOK, ALL_AUTHORS, ALL_GENRES } from '../queries'
 import { useMutation, useApolloClient } from '@apollo/client'
 
 const NewBook = (props) => {
@@ -12,7 +12,7 @@ const NewBook = (props) => {
 
 
   const [ createBook ] = useMutation(CREATE_BOOK, {
-    refetchQueries: [ { query: ALL_AUTHORS }],
+    refetchQueries: [ { query: ALL_AUTHORS },{ query: ALL_GENRES }],
     onError: (error) => {
       console.log("ERROR createBook")
       console.log(error)
@@ -25,7 +25,8 @@ const NewBook = (props) => {
     },
     update: (cache, response) => {
       const addedBook = response.data.addBook
-
+      props.updateCacheBooksWith(addedBook)
+    /*
       // Actualizamos caché de ALL_BOOKS sin variables (todos)
       cache.updateQuery({ query: ALL_BOOKS, variables: { genre: null } }, (data) => {
         if (!data) return { allBooks: [addedBook] }
@@ -45,7 +46,7 @@ const NewBook = (props) => {
             include: [ { query: ALL_BOOKS, variables: { genre: g } } ]
           })
         }
-      })
+      })*/
     }
   })
 

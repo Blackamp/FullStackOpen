@@ -6,7 +6,8 @@ import Notify from "./components/Notify";
 import LoginForm from "./components/LoginForm";
 import Recommend from "./components/Recommend";
 
-import { useApolloClient } from '@apollo/client';
+import { useApolloClient, useSubscription } from '@apollo/client';
+import { BOOK_ADDED, ALL_BOOKS } from './queries'
 
 
 
@@ -15,6 +16,56 @@ const App = () => {
   const [errorMessage, setErrorMessage] = useState(null)
   const [token, setToken] = useState("");
   const client = useApolloClient()
+
+  
+ const updateCacheBooksWith = (addedBook) => {
+  const includedIn = (set, object) => 
+    set.map(b => b.id).includes(object.id)
+
+  // cache global de Apollo
+  const cache = client.cache
+
+  // Actualizamos caché de ALL_BOOKS sin variables (todos)
+  try {
+    cache.updateQuery({ query: ALL_BOOKS, variables: { genre: null } }, (data) => {
+      if (!data) throw new Error("Cache empty")
+      if (includedIn(data.allBooks, addedBook)) return data
+      return { allBooks: data.allBooks.concat(addedBook) }
+    })
+  } catch (e) { // Si la query no estaba en caché, la refetcheamos
+    client.refetchQueries({
+      include: [{ query: ALL_BOOKS, variables: { genre: null } }]
+    })
+  }
+
+  // Actualizamos caché para cada género
+  addedBook.genres.forEach(g => {
+    try {
+      cache.updateQuery({ query: ALL_BOOKS, variables: { genre: g } }, (data) => {
+        if (!data) throw new Error("Cache empty")
+        if (includedIn(data.allBooks, addedBook)) return data
+        return { allBooks: data.allBooks.concat(addedBook) }
+      })
+    } catch (e) { // Si la query no estaba en caché, la refetcheamos
+      client.refetchQueries({
+        include: [{ query: ALL_BOOKS, variables: { genre: g } }]
+      })
+    }
+  })
+}
+
+  useSubscription(BOOK_ADDED, {
+    onData: ({ data }) => {
+      console.log(data.data.bookAdded)
+      const newBook = data.data.bookAdded
+      notify(`${newBook.title} added`)
+      updateCacheBooksWith(newBook)
+    },
+    onError: (error) => {
+      console.log(error)
+    }
+  })
+
 
   const notify = (message) => {
     setErrorMessage(message)
@@ -28,6 +79,9 @@ const App = () => {
     localStorage.clear()
     client.resetStore()
   }
+
+
+
 
   return (
     <div>
@@ -52,7 +106,7 @@ const App = () => {
 
       <Authors show={page === "authors"} token={token} setError={notify}  />
       <Books show={page === "books"} />
-      <NewBook show={page === "add"} setError={notify} />
+      <NewBook show={page === "add"} updateCacheBooksWith={updateCacheBooksWith} setError={notify} />
       <Recommend show={page === "recommend"} setError={notify} />      
       {!token && (
         <LoginForm show={page === "login"} setPage={setPage} setToken={setToken} setError={notify} />  

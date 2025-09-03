@@ -1,13 +1,27 @@
 const { ApolloServer } = require('@apollo/server')
-const { GraphQLError } = require('graphql');
-const { startStandaloneServer } = require('@apollo/server/standalone')
-const { gql } = require('graphql-tag')
-const { v4: uuid } = require('uuid');
-const Author = require('./models/author')
-const Book = require('./models/book');
-const User = require('./models/user');
-const jwt = require('jsonwebtoken')
+const { ApolloServerPluginDrainHttpServer } = require('@apollo/server/plugin/drainHttpServer')
+const { expressMiddleware } = require('@apollo/server/express4')
+const { makeExecutableSchema } = require('@graphql-tools/schema')
 
+const { WebSocketServer } = require('ws')
+const { useServer } = require('graphql-ws/lib/use/ws')
+
+const http = require('http')
+const express = require('express')
+const bodyParser = require('body-parser')
+const cors = require('cors')
+
+const jwt = require('jsonwebtoken')
+const mongoose = require('mongoose')
+const { PubSub } = require('graphql-subscriptions')
+const { GraphQLError } = require('graphql') // Importa GraphQLError
+const { gql } = require('graphql-tag')
+
+const Author = require( "./models/author.js")
+const Book = require( "./models/book.js")
+const User = require( "./models/user.js")
+
+require('dotenv').config()
 
 
 let authors = [
@@ -35,13 +49,6 @@ let authors = [
     id: "afa5b6f3-344d-11e9-a414-719c6709cf3e",
   },
 ]
-
-/*
- * Spanish:
- * Podría tener más sentido asociar un libro con su autor almacenando la id del autor en el contexto del libro en lugar del nombre del autor
- * Sin embargo, por simplicidad, almacenaremos el nombre del autor en conexión con el libro
-*/
-
 let books = [
   {
     title: 'Clean Code',
@@ -94,14 +101,10 @@ let books = [
   },
 ]
 
-const mongoose = require('mongoose')
+// --- MongoDB ---
 mongoose.set('strictQuery', false)
-
-
-require('dotenv').config()
 const MONGODB_URI = process.env.MONGODB_URI
 console.log('connecting to', MONGODB_URI)
-
 mongoose.connect(MONGODB_URI)
   .then(() => {
     console.log('connected to MongoDB')
@@ -109,6 +112,8 @@ mongoose.connect(MONGODB_URI)
   .catch((error) => {
     console.log('error connection to MongoDB:', error.message)
   })
+
+const pubsub = new PubSub()
 
 const typeDefs = gql`
   type Author {
@@ -164,9 +169,12 @@ const typeDefs = gql`
       username: String!
       password: String!
     ): Token
-}
+  }
+  
+  type Subscription {
+    bookAdded: Book!
+  }    
 `
-
 const resolvers = {
   Query: {
     bookCount: async () => Book.collection.countDocuments(),
@@ -210,15 +218,27 @@ const resolvers = {
       console.log("Query - AllAuthor")
 
       const allAuthor = await Author.find({});
-      const allBooks = await Book.find({}).populate('author');
-
-      const authorsWithNumBooks = allAuthor.map(a => {
-        return {
-          ...a.toJSON(),
-          bookCount: allBooks.filter(b => b.author.name === a.name).length
+      // Agregamos conteo de libros por autor usando agregación
+      const bookCounts = await Book.aggregate([
+        { 
+          $group: { 
+            _id: "$author",   // Agrupamos por el ObjectId del autor
+            count: { $sum: 1 } // Contamos libros
+          } 
         }
+      ]);
+
+      // Creamos un mapa para acceder rápido al count
+      const bookCountMap = {};
+      bookCounts.forEach(bc => {
+        bookCountMap[bc._id.toString()] = bc.count;
       });
-      return authorsWithNumBooks;
+
+      // Retornamos autores con bookCount
+      return allAuthor.map(a => ({
+        ...a.toJSON(),
+        bookCount: bookCountMap[a._id.toString()] || 0
+      }));
     },
     me: (root, args, context) => {
       return context.currentUser
@@ -266,7 +286,10 @@ const resolvers = {
           }
         })
       }
-      return newBook.populate('author')
+
+      const populatedBook = await newBook.populate('author')
+      pubsub.publish('BOOK_ADDED', { bookAdded: populatedBook })
+      return populatedBook
     },
 
     editAuthor: async (root, args, context) => {
@@ -337,26 +360,77 @@ const resolvers = {
 
       return { value: jwt.sign(userForToken, process.env.JWT_SECRET) }
     }
+  },
+
+  Subscription: {
+    bookAdded: {
+      subscribe: () => pubsub.asyncIterator(['BOOK_ADDED'])
+    },
   }
 }
 
-const server = new ApolloServer({
-  typeDefs,
-  resolvers,
-})
 
-startStandaloneServer(server, {
-  listen: { port: 4000 },
-  context: async ({ req, res }) => {
-    const auth = req ? req.headers.authorization : null
-    if (auth && auth.startsWith('Bearer ')) {
-      const decodedToken = jwt.verify(
-        auth.substring(7), process.env.JWT_SECRET
-      )
-      const currentUser = await User.findById(decodedToken.id)
-      return { currentUser }
-    }
-  },
-}).then(({ url }) => {
-  console.log(`Server ready at ${url}`)
-})
+// --- Server ---
+
+// setup is now within a function
+const start = async () => {
+  const app = express()
+  const httpServer = http.createServer(app)
+
+  const wsServer = new WebSocketServer({
+    server: httpServer,
+    path: '/graphql',
+  })
+  
+  const schema = makeExecutableSchema({ typeDefs, resolvers })
+  const serverCleanup = useServer({ schema }, wsServer);
+
+  const server = new ApolloServer({
+    schema,
+    plugins: [
+      ApolloServerPluginDrainHttpServer({ httpServer }),
+      {
+        async serverWillStart() {
+          return {
+            async drainServer() {
+              await serverCleanup.dispose();
+            },
+          };
+        },
+      },
+    ],
+  })
+
+  await server.start()
+
+  const corsOptions = {
+    origin: 'http://localhost:5173', // o '*' para desarrollo
+    credentials: true,
+  }
+
+  app.use(
+    '/graphql',
+    cors(corsOptions),
+    express.json(),
+    expressMiddleware(server, {
+      context: async ({ req }) => {
+        const auth = req ? req.headers.authorization : null
+        if (auth && auth.startsWith('Bearer ')) {
+          const decodedToken = jwt.verify(
+            auth.substring(7), process.env.JWT_SECRET
+          )
+          const currentUser = await User.findById(decodedToken.id)
+          return { currentUser }
+        }
+      }
+    }),
+  )
+
+  const PORT = 4000
+
+  httpServer.listen(PORT, () =>
+    console.log(`Server is now running on http://localhost:${PORT}/graphql`)
+  )
+}
+
+start()

@@ -1,6 +1,6 @@
-import { useQuery } from "@apollo/client";
 import { useState } from 'react'
-import { ALL_BOOKS,ALL_GENRES } from '../queries'
+import { ALL_BOOKS, ALL_GENRES, BOOK_ADDED } from '../queries'
+import {  useQuery, useMutation, useApolloClient } from '@apollo/client'
 
 
 const Books = (props) => {
@@ -16,6 +16,7 @@ const Books = (props) => {
   if (resultBooks.loading || resultGenres.loading) return <div>Loading...</div>;
   if (resultBooks.error) return <div>Error loading books: {resultBooks.error.message}</div>;
   if (resultGenres.error) return <div>Error loading genres: {resultGenres.error.message}</div>;
+
 
   
   const books = resultBooks.data.allBooks
