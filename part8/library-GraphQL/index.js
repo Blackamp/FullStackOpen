@@ -141,6 +141,7 @@ const typeDefs = gql`
     authorCount: Int!
     allBooks(author: String, genre: String): [Book!]!
     allAuthors: [Author!]!
+    allGenres: [String!]!
     me: User
   }
   
@@ -197,6 +198,13 @@ const resolvers = {
         }
       }
     },
+    allGenres: async () => {
+      console.log("Query - AllGenres")
+
+      const allBooks = await Book.find({});
+      const allGenres = allBooks.flatMap(b => b.genres);
+      return [...new Set(allGenres)]; // solo únicos
+    },
     allAuthors: async () => {
 
       console.log("Query - AllAuthor")
@@ -205,9 +213,8 @@ const resolvers = {
       const allBooks = await Book.find({}).populate('author');
 
       const authorsWithNumBooks = allAuthor.map(a => {
-        const plainAuthor = a.toObject() // 👈 convierte en objeto JS plano
         return {
-          ...plainAuthor,
+          ...a.toJSON(),
           bookCount: allBooks.filter(b => b.author.name === a.name).length
         }
       });
@@ -236,7 +243,7 @@ const resolvers = {
 
       // si no existe, lo creamos
       if (!author) {
-        author = new Author({ name: args.author });
+        author = new Author({ name: args.author});
         try {
           await author.save();
         } catch (error) {
@@ -315,7 +322,7 @@ const resolvers = {
       const user = await User.findOne({ username: args.username })
       //console.log(user)
       if ( !user || args.password !== 'secret' ) {
-        throw new GraphQLError(error.message, {
+        throw new GraphQLError('wrong credentials', {
           extensions: {
             code: 'BAD_USER_INPUT', // equivalente a UserInputError
             invalidArgs: args

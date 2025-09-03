@@ -1,8 +1,6 @@
 import { useState } from 'react'
 import { CREATE_BOOK, ALL_AUTHORS, ALL_BOOKS } from '../queries'
-import { useMutation } from '@apollo/client'
-
-
+import { useMutation, useApolloClient } from '@apollo/client'
 
 const NewBook = (props) => {
   const [title, setTitle] = useState('')
@@ -10,11 +8,13 @@ const NewBook = (props) => {
   const [published, setPublished] = useState('')
   const [genre, setGenre] = useState('')
   const [genres, setGenres] = useState([])
+  const client = useApolloClient()
+
 
   const [ createBook ] = useMutation(CREATE_BOOK, {
-    refetchQueries: [ { query: ALL_AUTHORS },{ query: ALL_BOOKS } ],
+    refetchQueries: [ { query: ALL_AUTHORS }],
     onError: (error) => {
-      console.log("ERROR editAuthor")
+      console.log("ERROR createBook")
       console.log(error)
       const message =
         error.graphQLErrors?.[0]?.message ||
@@ -22,6 +22,30 @@ const NewBook = (props) => {
         error.message;
       console.log("Error message:", message);
       props.setError(message)
+    },
+    update: (cache, response) => {
+      const addedBook = response.data.addBook
+
+      // Actualizamos caché de ALL_BOOKS sin variables (todos)
+      cache.updateQuery({ query: ALL_BOOKS, variables: { genre: null } }, (data) => {
+        if (!data) return { allBooks: [addedBook] }
+        return { allBooks: data.allBooks.concat(addedBook) }
+      })
+
+      // También actualizamos caché para cada género que tenga el libro
+      addedBook.genres.forEach(g => {
+        try {
+          cache.updateQuery({ query: ALL_BOOKS, variables: { genre: g } }, (data) => {
+            if (!data) throw new Error("Cache empty") // fuerza el refetch
+            return { allBooks: data.allBooks.concat(addedBook) }
+          })
+        } catch (e) {
+          // Si la query no estaba en caché, la refetcheamos
+          client.refetchQueries({
+            include: [ { query: ALL_BOOKS, variables: { genre: g } } ]
+          })
+        }
+      })
     }
   })
 

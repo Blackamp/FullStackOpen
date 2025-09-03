@@ -21,8 +21,6 @@ const Authors = (props) => {
   const authors = result.data.allAuthors
   //console.log(authors)
 
-
-
   return (
     <div>
       <h2>authors</h2>
@@ -43,8 +41,13 @@ const Authors = (props) => {
         </tbody>
       </table>
 
-      <h3>Set birthday</h3>
-      <AuthorForm authors={authors} setError={props.setError} />
+      {props.token && (
+        <>
+          <h3>Set birthday</h3>
+          <AuthorForm authors={authors} setError={props.setError} />
+        </>
+      )}
+
     </div>
   )
 }
