@@ -6,7 +6,7 @@ interface MultiplyValues {
   value2: number;
 }
 
-const parseArguments = (args: string[]): MultiplyValues => {
+export const parseArgumentsBmi = (args: string[]): MultiplyValues => {
   if (args.length < 4) throw new Error('Not enough arguments');
   if (args.length > 4) throw new Error('Too many arguments');
 
@@ -16,12 +16,12 @@ const parseArguments = (args: string[]): MultiplyValues => {
       value2: Number(args[3])
     }
   } else {
-    throw new Error('Provided values were not numbers!');
+    throw new Error('Malformatted parameters. Provided values were not numbers!');
   }
 }
 
 
-const calculateBmi  = (alturaCM: number, pesoKg: number): string => {
+export const calculateBmi  = (alturaCM: number, pesoKg: number): string => {
     const alturaM = alturaCM / 100;
     const IMC = pesoKg / (alturaM * alturaM);
 
@@ -34,12 +34,12 @@ const calculateBmi  = (alturaCM: number, pesoKg: number): string => {
     } else if (IMC >= 30) {
         return 'Obesity';
     } else {
-        return 'Error';
+        throw new Error('Provided values were not numbers!');
     }
 }
 
 try {
-  const { value1, value2 } = parseArguments(process.argv);
+  const { value1, value2 } = parseArgumentsBmi(process.argv);
   console.log(calculateBmi(value1, value2));
 } catch (error: unknown) {
   let errorMessage = 'Something bad happened.'
