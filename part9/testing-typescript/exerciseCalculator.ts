@@ -6,11 +6,11 @@ interface MultiplyValues {
   trainingArray: number[];
 }
 
-const parseArguments = (args: string[]): MultiplyValues => {
+const parse4ArgumentsExer = (args: string[]): MultiplyValues => {
   if (args.length < 4) throw new Error('Not enough arguments');
 
   const targetObj = args[2];
-  const trainingArray = []
+  const trainingArray = [];
 
   if(isNotNumber(targetObj))
     throw new Error('Target value is not a number');
@@ -25,8 +25,40 @@ const parseArguments = (args: string[]): MultiplyValues => {
   return {
     targetObj: Number(targetObj),
     trainingArray
+  };
+};
+
+
+export const parseObjArgumentsExer = (args: unknown): MultiplyValues => {
+
+   if (!args || typeof args !== 'object' || !('daily_exercises' in args) || !('target' in args)) {
+    throw new Error('Invalid arguments');
   }
-}
+
+  const targetObj = args.target;
+  const trainingArray = [];
+
+  if(isNotNumber(targetObj))
+    throw new Error('Target value is not a number');
+
+
+   if (!Array.isArray(args.daily_exercises)) {
+    throw new Error('daily_exercises must be an array');
+  }
+
+  for (let i = 0; i < args.daily_exercises.length; i++) {
+    if(isNotNumber(args.daily_exercises[i]))
+        throw new Error('One of the exercise values is not a number');
+    else
+        trainingArray.push(Number(args.daily_exercises[i]));
+  }
+
+  return {
+    trainingArray,
+    targetObj: Number(targetObj)
+  };
+};
+
 
 
 
@@ -40,7 +72,7 @@ interface Ejercicio {
     ratingDescription: string;
 }
 
-const calculateExercises = (userTargetObj:number, trainingArray: number[]): Ejercicio => {
+export const calculateExercises = (userTargetObj:number, trainingArray: number[]): Ejercicio => {
 
     const numDays = trainingArray.length;
     const trainingDays = trainingArray.filter(day => day > 0).length;
@@ -70,13 +102,13 @@ const calculateExercises = (userTargetObj:number, trainingArray: number[]): Ejer
         rating,
         ratingDescription
     };
-}
+};
 
 try {
-  const { targetObj, trainingArray } = parseArguments(process.argv);
+  const { targetObj, trainingArray } = parse4ArgumentsExer(process.argv);
   console.log(calculateExercises(targetObj, trainingArray));
 } catch (error: unknown) {
-  let errorMessage = 'Something bad happened.'
+  let errorMessage = 'Something bad happened.';
   if (error instanceof Error) {
     errorMessage += ' Error: ' + error.message;
   }
