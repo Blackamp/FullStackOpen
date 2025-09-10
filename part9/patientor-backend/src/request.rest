@@ -1,0 +1,17 @@
+POST http://localhost:3001/api/patients HTTP/1.1
+content-type: application/json
+
+{
+  "name": "Manuela",
+  "dateOfBirth": "1990 8 5",
+  "gender": "female",
+  "occupation": "Teacher"
+}
+###
+
+GET http://localhost:3001/api/patients
+
+
+###
+
+GET http://localhost:3001/api/patients/d2773598-f723-11e9-8f0b-362b9e155667
