@@ -1,0 +1,13 @@
+GET http://localhost:3000/api/diaries
+
+###
+
+POST http://localhost:3000/api/patients HTTP/1.1
+content-type: application/json
+
+{
+  "name": "Manuela",
+  "dateOfBirth": "1990 8 5",
+  "gender": "female",
+  "occupation": "Teacher"
+}
