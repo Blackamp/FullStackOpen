@@ -1,4 +1,4 @@
-import { NewPatientEntry, Gender } from '../data/types';
+import { NewPatient, Gender } from './types';
 
 
 
@@ -37,17 +37,18 @@ const parseGender = (gender: unknown): Gender => {
 };
 
 
-export const toNewPatientEntry = (object: unknown): NewPatientEntry => {
+export const toNewPatientEntry = (object: unknown): NewPatient => {
   if ( !object || typeof object !== 'object' ) {
     throw new Error('Incorrect or missing data');
   }
 
-  if ('name' in object && 'dateOfBirth' in object && 'gender' in object && 'occupation' in object)  {
-    const newEntry: NewPatientEntry = {
+  if ('name' in object && 'dateOfBirth' in object && 'gender' in object && 'occupation' in object && 'entries' in object) {
+    const newEntry: NewPatient = {
       name: parseString(object.name,"name"),
       dateOfBirth: parseDate(object.dateOfBirth),
       gender: parseGender(object.gender),
-      occupation: parseString(object.occupation,"occupation")
+      occupation: parseString(object.occupation,"occupation"),
+      entries: []
     };
 
     // ssn opcional
