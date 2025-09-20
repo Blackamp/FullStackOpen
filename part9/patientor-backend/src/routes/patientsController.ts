@@ -1,6 +1,6 @@
 import express from 'express';
 import patientsService from '../services/patientsService';
-import toNewPatientEntry from '../utils';
+import {toNewPatientEntry, toNewEntry} from '../utils';
 
 
 
@@ -20,11 +20,11 @@ patientsController.get('/:id', (req, res) => {
   } else {
     res.sendStatus(404);
   }
-})
+});
 
 patientsController.post('/', (req, res) => {
   //res.send('Saving a patient!');
-    try {
+  try {
     const newPatientEntry = toNewPatientEntry(req.body);
     const addedPatientEntry = patientsService.addPatient(newPatientEntry);
     console.log("ADD PATIENT - ",addedPatientEntry);
@@ -39,5 +39,27 @@ patientsController.post('/', (req, res) => {
     res.status(400).send(errorMessage);
   }
 });
+
+patientsController.post('/:id/entries', (req, res) => {
+  //res.send('Saving a patient!');
+  try {
+    const patientId = req.params.id;
+    const newEntry = toNewEntry(req.body);
+
+    const addEntry = patientsService.addEntry(patientId,newEntry);
+    console.log("ADD ENTRY PATIENT - ",addEntry);
+    res.json(addEntry);
+  } catch (error: unknown) {
+    let errorMessage = 'Something went wrong.';
+    if (error instanceof Error) {
+      errorMessage += ' Error: ' + error.message;
+      console.log(errorMessage);
+
+    }
+    res.status(400).send(errorMessage);
+  }
+});
+
+
 
 export default patientsController;

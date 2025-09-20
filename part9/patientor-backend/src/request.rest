@@ -14,4 +14,30 @@ GET http://localhost:3001/api/patients
 
 ###
 
-GET http://localhost:3001/api/patients/d2773598-f723-11e9-8f0b-362b9e155667
+GET http://localhost:3001/api/patients/d27736ec-f723-11e9-8f0b-362b9e155667
+
+
+###
+
+GET http://localhost:3001/api/diagnoses
+
+###
+POST http://localhost:3001/api/patients/d27736ec-f723-11e9-8f0b-362b9e155667/entries HTTP/1.1
+content-type: application/json
+
+{
+  "date": "2019-08-05",
+  "type": "OccupationalHealthCare",
+  "specialist": "MD House",
+  "employerName": "HyPD",
+  "diagnosisCodes": [
+    "Z57.1",
+    "Z74.3",
+    "M51.2"
+  ],
+  "description": "Patient mistakenly found himself in a nuclear plant waste site without protection gear. Very minor radiation poisoning. ",
+  "sickLeave": {
+    "startDate": "2019-08-05",
+    "endDate": "2019-08-28"
+  }
+}
